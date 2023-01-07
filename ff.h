@@ -65,8 +65,11 @@ enum op {
     LDB, STRB,
 
     LDS, STRS,
+
     LDP, STRP,
     LDR, STRR,
+
+    LDI, STRI,
     LDH, STRH,
     LDL, STRL,
 
@@ -98,8 +101,8 @@ void _drop(VM *vm) {
 void _swap(VM *vm) {
     cell tmp1 = vm->ps[--vm->psp];
     cell tmp2 = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = tmp2;
     vm->ps[vm->psp++] = tmp1;
+    vm->ps[vm->psp++] = tmp2;
 }
 
 void _push(VM *vm) {
@@ -117,9 +120,9 @@ void _pickp(VM *vm) {
 }
 
 void _pickr(VM *vm) {
-    byte n = vm->rs[--vm->rsp] + 1;
+    byte n = vm->ps[--vm->psp] + 1;
     n = vm->rsp - n;
-    vm->rs[vm->rsp++] = vm->rs[n];
+    vm->ps[vm->psp++] = vm->rs[n];
 }
 
 void _jmp(VM *vm) {
@@ -264,42 +267,52 @@ void _strs(VM *vm) {
 }
 
 void _ldp(VM *vm) {
-    cell val = vm->psp;
+    byte val = vm->psp;
     vm->ps[vm->psp++] = val;
 }
 
 void _strp(VM *vm) {
-    cell val = vm->ps[--vm->psp];
+    byte val = vm->ps[--vm->psp];
     vm->psp = val;
 }
 
 void _ldr(VM *vm) {
-    cell val = vm->rsp;
+    byte val = vm->rsp;
     vm->ps[vm->psp++] = val;
 }
 
 void _strr(VM *vm) {
-    cell val = vm->ps[--vm->psp];
+    byte val = vm->ps[--vm->psp];
     vm->rsp = val;
 }
 
+void _ldi(VM *vm) {
+    ptr val = vm->ip;
+    vm->ps[vm->psp++] = val;
+}
+
+void _stri(VM *vm) {
+    ptr val = vm->ps[--vm->psp];
+    vm->ip = val;
+}
+
 void _ldh(VM *vm) {
-    cell val = vm->hp;
+    ptr val = vm->hp;
     vm->ps[vm->psp++] = val;
 }
 
 void _strh(VM *vm) {
-    cell val = vm->ps[--vm->psp];
+    ptr val = vm->ps[--vm->psp];
     vm->hp = val;
 }
 
 void _ldl(VM *vm) {
-    cell val = vm->lp;
+    ptr val = vm->lp;
     vm->ps[vm->psp++] = val;
 }
 
 void _strl(VM *vm) {
-    cell val = vm->ps[--vm->psp];
+    ptr val = vm->ps[--vm->psp];
     vm->lp = val;
 }
 
@@ -319,8 +332,8 @@ fun prims[] = {
     _jmp, _jz, _call, _ret, _eq, _neq,
     _lt, _gt, _and, _or, _xor, _shr,
     _shl, _add, _sub, _mul, _div, _mod,
-    _ldc, _strc, _ldb, _strb, _lds,
-    _strs, _ldp, _strp, _ldr, _strr,
+    _ldc, _strc, _ldb, _strb, _lds, _strs,
+    _ldp, _strp, _ldr, _strr, _ldi, _stri,
     _ldh, _strh, _ldl, _strl, _key, _emit,
 };
 
@@ -328,9 +341,16 @@ void init(VM *vm) {
     vm->p = ON;
     vm->s = INTERPRET;
 
+    for(int i = 0; i < 0x100; ++i)
+        vm->ps[i] = 0;
     vm->psp = 0;
+
+    for(int i = 0; i < 0x100; ++i)
+        vm->rs[i] = 0;
     vm->rsp = 0;
 
+    for(int i = 0; i < 0x10000; ++i)
+        vm->mem[i] = 0;
     vm->ip = 0;
     vm->hp = 0;
     vm->lp = 0;
@@ -345,7 +365,7 @@ void exec(VM *vm) {
 }
 
 void run(VM *vm) {
-    while(vm->s == ON)
+    while(vm->p == ON)
         exec(vm);
 }
 
@@ -357,10 +377,13 @@ void debug(VM *vm) {
     printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
     for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i)
         printf("%10i\t%10i\n", vm->ps[i], vm->rs[i]);
-
+/*
+*/
     printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
     for(int i = 0; i < vm->hp; ++i)
-        printf("%#08x: %10i\n", i, vm->mem[i]);
+        printf("0x%04x: %3i\n", i, vm->mem[i]);
+
+    printf("\n\n");
 }
 
 
