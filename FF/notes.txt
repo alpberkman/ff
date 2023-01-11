@@ -1,0 +1,60 @@
+extend_dict(vm, "NOP", MASK_VIS, (byte[]) {OP_NOP}, 1);
+
+void eval(VM *vm, char *str) {
+	char *delimiter = " \t\n\v\f\r";
+    char *word = strtok(str, delimiter);
+    while(word != NULL ) {
+        eval_word(vm, word);
+        word = strtok(NULL, delimiter);
+    }
+}
+
+char *script;
+void eval(VM *vm, char *str) {
+	script = str;
+	char word[MAX_LEN + 1] = {0};
+    for(;script != NULL;) {
+		while(isblank(*script)) script++;
+		if(*script == '\0') break;
+		int len = 0;
+		do {
+			word[len++] = *script++;
+		} while(isgraph(*script) && len < 31);
+		word[len] = '\0';
+//printf("%s", word);
+		if(isblank(*script)) script++;
+		if(*script == '\0') script = NULL;
+		eval_word(vm, word);
+//printf(" %s %c\n", script, *script);
+    }
+	script = NULL;
+}
+
+void repl(VM *vm) {
+	char buffer[MAX_LEN + 1];
+	while(scanf("%31s", buffer) != EOF) {
+        eval_word(vm, buffer);
+#ifdef DEBUG_REPL
+        debug(vm);
+#endif
+    }
+}
+
+void eval(VM *vm, char *str) {
+	script = str;
+	char word[MAX_LEN + 1] = {0};
+	for(;;) {
+		while(isblank(*script)) script++;
+		if(*script == '\0') break;
+		int len = 0;
+		do {
+			word[len++] = *script++;
+		} while(len < 31 && isgraph(*script));
+		word[len] = '\0';
+		if(isblank(*script)) script++;
+		if(*script == '\0') script = NULL;
+		eval_word(vm, word);
+		if(script == NULL) break;
+    }
+	script = NULL;
+}

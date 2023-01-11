@@ -1,8 +1,17 @@
 
+: app { LDH STRC LDH LIT 2 0 ADD STRH } ;
+: lit { 
+: imm { LDL LIT 1 0 ADD DUP LDC LIT 0x40 0 OR SWAP STRC } ;
+
+
+
+
+
+
 : STUB ." This is a STUB" CR ;
 
-: TRUE -1 ;
-: FALSE 0 ;
+-1 CONSTANT TRUE 
+0 CONSTANT FALSE
 
 
 \ Nucleus Layer
@@ -28,25 +37,25 @@
 : > ( n1 n2 -- flag) OP_GT ;
 : >R ( 16b --) OP_POP OP_SWAP OP_PUSH OP_PUSH ;
 : ?DUP ( 16b -- 16b 16b or 0 -- 0) DUP IF DUP THEN ;
-: @ ( addr -- 16b) OP_LOAD ;
-: ABS ( n -- u) DUP 0< IF 1- NOT ;
+: @ ( addr -- 16b) OP_LD ;
+: ABS ( n -- u) DUP 0< IF NEGATE THEN ;
 : AND ( 16b1 16b2 -- 16b3) OP_AND ;
 : C! ( 16b addr --) OP_STRB ;
-: C@ ( addr -- 8b) OP_LOADB ;
+: C@ ( addr -- 8b) OP_LDB ;
 : CMOVE ( addr1 addr2 u --) DUP 0= IF DROP DROP DROP EXIT THEN 0 DO OVER I + C@ OVER I + C! LOOP DROP DROP ;
 : CMOVE> ( addr1 addr2 u --) DUP 0= IF DROP DROP DROP EXIT THEN 1 SWAP DO OVER I + 1- C@ OVER I + 1- C! -1 +LOOP DROP DROP ;
 : COUNT
-: D+
-: D<
+: D+ ( wd1 wd2 -- wd3) STUB ;
+: D< ( d1 d2 -- flag) STUB ;
 : DEPTH
-: DNEGATE
+: DNEGATE ( d1 -- d2) STUB ;
 : DROP ( 16b --)
 : DUP ( 16b -- 16b 16b) 0 PICK ;
 : EXECUTE
 : EXIT ( --) OP_RET ;
 : FILL
-: I
-: J
+: I ( -- w) 0 RPICK ;
+: J ( -- w) 2 RPICK ;
 : MAX ( n1 n2 -- n3) OVER OVER < IF SWAP THEN DROP ;
 : MIN ( n1 n2 -- n3) OVER OVER > IF SWAP THEN DROP ;
 : MOD ( n1 n2 -- n3) OP_MOD ;
@@ -55,12 +64,12 @@
 : OR ( 16b1 16b2 -- 16b3) OP_OR ;
 : OVER ( 16b1 16b2 -- 16b1 16b2 16b3) 1 PICK ;
 : PICK ( +n -- 16b) OP_PICK ;
-: R> ( -- 16b) OP_POP OP_SWAP OP_PUSH OP_PUSH ;
-: R@
+: R> ( -- 16b) OP_POP OP_POP OP_SWAP OP_PUSH ;
+: R@ ( -- 16b) R> DUP R> ;
 : ROLL
 : ROT ( 16b1 16b2 16b3 -- 16b2 16b3 16b1) >R SWAP <R SWAP ;
 : SWAP ( 16b1 16b2 -- 16b2 16b1) OP_SWAP ;
-: U<
+: U< (  u1 u2 -- flag) STUB ;
 : UM* ( u1 u2 -- ud) * ;
 : UM/MOD ( ud u1 -- u2 u3) STUB ;
 : XOR ( 16b1 16b2 -- 16b3) OP_XOR ;
@@ -82,13 +91,26 @@ EXPECT
 
 
 \ Interpreter Layer 
-#  #>  #S  #TIB  '  ( delete this) -TRAILING  .  .(  <#  >BODY  >IN  
-ABORT  BASE  BLK  CONVERT  DECIMAL  DEFINITIONS  FIND  
-FORGET  FORTH  FORTH-83  HERE  HOLD  LOAD  PAD  QUIT  SIGN 
-SPAN  TIB  U.  WORD
+#  #>  #S  
+( ) #TIB TIB
+  '  ( delete this) -TRAILING  .  .(  <#  >BODY  >IN  
+ABORT  BASE 
+: BLK ( -- addr) STUB ;
+  CONVERT  DECIMAL  DEFINITIONS  FIND  
+FORGET  FORTH  FORTH-83  
+: HERE ( -- addr) OP_LDH ;
+ HOLD  LOAD  PAD  QUIT  SIGN 
+SPAN  
+
+( ) 80 ALLOT
+( ) CONSTANT TIB
+U.  WORD
 
 \ Compiler Layer 
-+LOOP  ,  ."  :  ;  ABORT"  ALLOT  BEGIN  COMPILE  CONSTANT  
++LOOP  ,  ."  :  ;  
+: ABORT" STUB ;
+: ALLOT ( w --) HERE +! ;
+  BEGIN  COMPILE  CONSTANT  
 CREATE  DO  DOES>  ELSE  IF  IMMEDIATE  LEAVE  LITERAL  LOOP 
 REPEAT  STATE  THEN  UNTIL  VARIABLE  VOCABULARY  WHILE    
 [']  [COMPILE]  ]
