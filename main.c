@@ -9,7 +9,6 @@ int main() {
 	VM vm;
 	init(&vm);
 	words(&vm);
-	//debug(&vm);
 	run(&vm);
 	debug(&vm);
 

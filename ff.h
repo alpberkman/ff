@@ -339,8 +339,16 @@ void _emit(VM *vm) {
 void _col(VM *vm) {
 
 	char buf[32];
-	if(scanf("%31s", buf) == EOF)
-		return;
+	int c;
+	while(isspace(c = getchar()));
+	
+	byte len = 0;
+	do {
+		if(c == EOF)
+			return;
+		buf[len++] = c - (c >= 'a' && c <= 'z' ? 'a' - 'A' : 0);
+	} while(len < 31 && !isspace(c = getchar()));
+	buf[len] = '\0';
 
 	vm->s = COMPILE;
 	
@@ -350,7 +358,7 @@ void _col(VM *vm) {
 	
 	byte i;
 	for(i = 0; buf[i] != '\0'; ++i)
-		vm->mem[vm->hp + 1 + i] = buf[i] - (buf[i] >= 'a' && buf[i] <= 'z' ? 'a' - 'A' : 0);
+		vm->mem[vm->hp + 1 + i] = buf[i];
 
 	vm->mem[vm->hp] = i;
 	vm->hp += 1 + i;
@@ -365,15 +373,19 @@ void _semi(VM *vm) {
 void _eval(VM *vm) {
 
 	char buf[32];
-	if(scanf("%31s", buf) == EOF)
-		return;
+	int c;
+	while(isspace(c = getchar()));
+	
+	byte len = 0;
+	do {
+		if(c == EOF)
+			return;
+		buf[len++] = c - (c >= 'a' && c <= 'z' ? 'a' - 'A' : 0);
+	} while(len < 31 && !isspace(c = getchar()));
+	buf[len] = '\0';
 	
 	ptr addr;
 	byte flags;
-	byte len = strlen(buf);
-	
-	for(int i = 0; i < len; ++i)
-		buf[i] -= buf[i] >= 'a' && buf[i] <= 'z' ? 'a' - 'A' : 0;
 	
 	for(addr = vm->lp; addr != 0; addr = *((ptr *) &(vm->mem[addr]))) {
 		flags = vm->mem[addr + sizeof(cell)];
@@ -487,24 +499,6 @@ void run(VM *vm) {
 }
 
 
-void debug(VM *vm) {
-    printf("Debug Info\n");
-    printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
-    printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
-
-    printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
-    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i)
-        printf("%10i\t%10i\n", vm->ps[i], vm->rs[i]);
-
-    printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
-    for(int i = 0; i < vm->hp; ++i)
-        printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
-
-    printf("\n\n");
-}
-
-
-
 void word(VM *vm, char *name, char *fun, int len, char flag) {
 	
 	*((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
@@ -533,7 +527,7 @@ void words(VM *vm) {
 	word(vm, "bapp", bapp_arr, sizeof(bapp_arr), MASK_VIS | MASK_IMM);
 	
 	char capp_arr[] = {
-		LDH, STRC, LDH, LIT, 1, 0, ADD, STRH,
+		LDH, STRC, LDH, LIT, 2, 0, ADD, STRH,
 	};
 	word(vm, "capp", capp_arr, sizeof(capp_arr), MASK_VIS | MASK_IMM);
 	
@@ -547,12 +541,23 @@ void words(VM *vm) {
 	};
 	word(vm, ";", semi_arr, sizeof(semi_arr), MASK_VIS | MASK_IMM);
 
-/*	
-	char halt_arr[] = {
-		HALT,
-	};
-	word(vm, "halt", halt_arr, sizeof(halt_arr), MASK_VIS | MASK_IMM);
-*/
+}
+
+
+void debug(VM *vm) {
+    printf("Debug Info\n");
+    printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
+    printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
+
+    printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
+    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i)
+        printf("%10i\t%10i\n", vm->ps[i], vm->rs[i]);
+
+    printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
+    for(int i = 0; i < vm->hp; ++i)
+        printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
+
+    printf("\n\n");
 }
 
 
