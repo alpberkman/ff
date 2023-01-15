@@ -1,7 +1,15 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
 
 #define TRUE -1
 #define FALSE 0
+
+#define MASK_VIS (1<<7)
+#define MASK_IMM (1<<6)
+#define WORD_LEN (0x1f)
 
 
 typedef struct VM VM;
@@ -74,6 +82,7 @@ enum op {
     LDL, STRL,
 
     KEY, EMIT,
+    COL, SEMI, EVAL, DEB,
 };
 
 
@@ -326,6 +335,109 @@ void _emit(VM *vm) {
     putchar(c);
 }
 
+
+void _col(VM *vm) {
+
+	char buf[32];
+	if(scanf("%31s", buf) == EOF)
+		return;
+
+	vm->s = COMPILE;
+	
+	*((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
+	vm->lp = vm->hp;
+	vm->hp += sizeof(cell);
+	
+	byte i;
+	for(i = 0; buf[i] != '\0'; ++i)
+		vm->mem[vm->hp + 1 + i] = buf[i] - (buf[i] >= 'a' && buf[i] <= 'z' ? 'a' - 'A' : 0);
+
+	vm->mem[vm->hp] = i;
+	vm->hp += 1 + i;
+}
+
+void _semi(VM *vm) {
+	vm->mem[vm->hp++] = RET;
+	vm->mem[vm->lp + sizeof(cell)] |= MASK_VIS;
+	vm->s = INTERPRET;
+}
+
+void _eval(VM *vm) {
+
+	char buf[32];
+	if(scanf("%31s", buf) == EOF)
+		return;
+	
+	ptr addr;
+	byte flags;
+	byte len = strlen(buf);
+	
+	for(int i = 0; i < len; ++i)
+		buf[i] -= buf[i] >= 'a' && buf[i] <= 'z' ? 'a' - 'A' : 0;
+	
+	for(addr = vm->lp; addr != 0; addr = *((ptr *) &(vm->mem[addr]))) {
+		flags = vm->mem[addr + sizeof(cell)];
+		if((flags & MASK_VIS) && len == (flags & WORD_LEN)) {
+			if(strncmp(buf, (char *) &(vm->mem[addr + sizeof(cell) + 1]), len) == 0)
+				break;
+		}
+	}
+	
+	cell num = 0;
+	byte nflag = 0;
+	
+	if(addr == 0) {
+		nflag = strspn(buf, "1234567890-+") == len;
+		if(nflag)
+			num = atoi(buf);
+	}
+	
+	if(vm->s == INTERPRET) {
+		if(addr) {
+    		vm->rs[vm->rsp++] = vm->ip - 1;
+    		vm->ip = addr + sizeof(cell) + 1 + len;
+		} else if(nflag) {
+			vm->ps[vm->psp++] = num;
+			vm->ip = vm->ip - 1;
+		} else {
+			vm->ip = vm->ip - 1;
+		}
+	} else if(vm->s == COMPILE) {
+		if(addr) {
+			if(flags & MASK_IMM) {
+				vm->rs[vm->rsp++] = vm->ip - 1;
+    			vm->ip = addr + sizeof(cell) + 1 + len;
+			} else {
+				vm->mem[vm->hp++] = LIT;
+				*((cell *) &(vm->mem[vm->hp])) = addr + sizeof(cell) + 1 + len;
+				vm->hp += sizeof(cell);
+				vm->mem[vm->hp++] = CALL;
+				vm->ip = vm->ip - 1;
+			}
+		} else if(nflag) {
+			vm->mem[vm->hp++] = LIT;
+			*((cell *) &(vm->mem[vm->hp])) = num;
+			vm->hp += sizeof(cell);
+			vm->ip = vm->ip - 1;
+		} else {
+			vm->s = INTERPRET;
+			vm->hp = vm->lp;
+			vm->lp = *((ptr *) &(vm->mem[vm->lp]));
+			vm->ip = vm->ip - 1;
+		}
+	} else {
+		vm->s = INTERPRET;
+		vm->ip = vm->ip - 1;
+	}
+}
+
+void _deb(VM *vm) {
+	printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
+    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i)
+        printf("%10i\t%10i\n", vm->ps[i], vm->rs[i]);
+}
+
+
 fun prims[] = {
     _nop, _lit, _halt, _dup, _drop,
     _swap, _push, _pop,	_pickp, _pickr,
@@ -335,6 +447,7 @@ fun prims[] = {
     _ldc, _strc, _ldb, _strb, _lds, _strs,
     _ldp, _strp, _ldr, _strr, _ldi, _stri,
     _ldh, _strh, _ldl, _strl, _key, _emit,
+    _col, _semi, _eval, _deb,
 };
 
 void init(VM *vm) {
@@ -351,14 +464,12 @@ void init(VM *vm) {
 
     for(int i = 0; i < 0x10000; ++i)
         vm->mem[i] = 0;
-    vm->mem[0] = LIT;
-    vm->mem[1] = 4;
-    vm->mem[2] = NOP;
-    vm->mem[3] = CALL;
-    vm->mem[4] = HALT;
         
-    vm->ip = 5;
-    vm->hp = 5;
+    vm->mem[0] = EVAL;
+    vm->mem[1] = HALT;
+        
+    vm->ip = 0;
+    vm->hp = 2;
     vm->lp = 0;
 }
 
@@ -375,6 +486,7 @@ void run(VM *vm) {
         exec(vm);
 }
 
+
 void debug(VM *vm) {
     printf("Debug Info\n");
     printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
@@ -383,269 +495,81 @@ void debug(VM *vm) {
     printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
     for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i)
         printf("%10i\t%10i\n", vm->ps[i], vm->rs[i]);
-/*
-*/
+
     printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
     for(int i = 0; i < vm->hp; ++i)
-        printf("0x%04x: %3i\n", i, vm->mem[i]);
+        printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
 
     printf("\n\n");
 }
 
 
-void save(VM *vm, char *file) {
-	FILE *fp = open(file, "wb");
-	for(int i = 0; i < vm->hp; ++i)
-		putc(fp, vm->mem[i]);
-	close(fp);
-}
 
-void restore(VM *vm, char *file) {
-	int c;
-	FILE *fp = open(file, "rb");
-	while((c = getc(fp)) != EOF)
-		vm->mem[vm->hp++] = c;
-	close(fp);
-}
-
-
-#define MASK_VIS (1<<7)
-#define MASK_IMM (1<<6)
-#define MASK_LEN (0b00011111)
-#include <string.h>
 void word(VM *vm, char *name, char *fun, int len, char flag) {
 	
-	memcpy(vm->mem + vm->hp, &(vm->lp), CELL_SIZE);
+	*((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
 	vm->lp = vm->hp;
-	vm->hp += CELL_SIZE;
+	vm->hp += sizeof(cell);
 	
 	vm->mem[vm->hp++] = strlen(name) | flag;
 	
-	memcpy(vm->mem + vm->hp, name, strlen(name));//Make name capital
+	for(int i = 0; i < strlen(name); ++i)
+		vm->mem[vm->hp + i] = name[i] - (name[i] >= 'a' && name[i] <= 'z' ? 'a' - 'A' : 0);
 	vm->hp += strlen(name);
 	
-	memcpy(vm->mem + vm->hp, fun, len);
+	for(int i = 0; i < len; ++i) {
+		vm->mem[vm->hp + i] = fun[i];
+	}
 	vm->hp += len;
 	
 	vm->mem[vm->hp++] = RET;
 }
 
-// How about pushm memory push
-#define APP LDH, STRB, LDH, LIT, 1, 0, ADD, STRH
-#define BEQ(X) LIT, X, 0, EQ
-#define ISSPACE LIT, 0, 0, \
-				OVER, BEQ(' '), OR, \
-				OVER, BEQ('\t'), OR, \
-				OVER, BEQ('\n'), OR, \
-				OVER, BEQ('\v'), OR, \
-				OVER, BEQ('\f'), OR, \
-				OVER, BEQ('\r'), OR
-#define NOT LIT, 0, 0, NEQ
-					
 void words(VM *vm) {
 
-	char app_arr[] = {
-		APP
+	char bapp_arr[] = {
+		LDH, STRB, LDH, LIT, 1, 0, ADD, STRH,
 	};
-	word(vm, "app", app_arr, sizeof(app_arr), MASK_VIS | MASK_IMM);
+	word(vm, "bapp", bapp_arr, sizeof(bapp_arr), MASK_VIS | MASK_IMM);
+	
+	char capp_arr[] = {
+		LDH, STRC, LDH, LIT, 1, 0, ADD, STRH,
+	};
+	word(vm, "capp", capp_arr, sizeof(capp_arr), MASK_VIS | MASK_IMM);
+	
+	char col_arr[] = {
+		COL,
+	};
+	word(vm, ":", col_arr, sizeof(col_arr), MASK_VIS);
+	
+	char semi_arr[] = {
+		SEMI,
+	};
+	word(vm, ";", semi_arr, sizeof(semi_arr), MASK_VIS | MASK_IMM);
 
-	char semi_colon_arr[] = {
-		LIT, RET, 0, APP,
-		LDL, LIT, CELL_SIZE, 0, ADD, DUP, LDB,
-		LIT, MASK_VIS, 0, OR, SWAP, STRB
-	};
-	word(vm, "semi_colon", semi_colon_arr, sizeof(semi_colon_arr), MASK_VIS | MASK_IMM);
-	
-	char colon_arr[] = {
-		LIT, COMPILE, 0, STRS,
-		DUP,
-		DROP, KEY, ISSPACE,
-		NOT, LIT, /*addr drop before key*/,JZ,
-		APP, LIT, 1, 0,
-		
-		
-		
-	};
-	word(vm, "colon", colon_arr, sizeof(colon_arr), MASK_VIS);
-	
-	char repl_arr[] = {
-		
-	};
-	word(vm, "repl", repl_arr, sizeof(repl_arr), MASK_VIS);
-	
-	// ' tick
-	//
-	
-	
-/*
-	char immediate_arr[] = {
-		LDL, LIT, CELL_SIZE, 0, ADD, DUP, LDB,
-		LIT, (1<<6), 0, OR, SWAP, STRB
-	};
-	word(vm, "immediate", immediate_arr, sizeof(immediate_arr), MASK_VIS);
-	
-	
-	char nop_arr[] = {
-		LIT, NOP, 0, LDH, STRB,
-		LIT, 1, 0, LDH, STRH
-	};
-	word(vm, "nop", nop_arr, sizeof(nop_arr), MASK_VIS | MASK_IMM);
-	
-	char lit_arr[] = {
-		LIT, LIT, 0, LDH, STRB,
-		LIT, 1, 0, LDH, STRH
-	};
-	word(vm, "lit", nop_arr, sizeof(lit_arr), MASK_VIS | MASK_IMM);
-	
+/*	
 	char halt_arr[] = {
-		LIT, HALT, 0, LDH, STRB,
-		LIT, 1, 0, LDH, STRH
+		HALT,
 	};
 	word(vm, "halt", halt_arr, sizeof(halt_arr), MASK_VIS | MASK_IMM);
-	
-	
-	char dup_arr[] = {
-		DUP
-	};
-	word(vm, "dup", dup_arr, sizeof(dup_arr), MASK_VIS);
-	
-	char drop_arr[] = {
-		DROP
-	};
-	word(vm, "drop", drop_arr, sizeof(drop_arr), MASK_VIS);
-	
-	char swap_arr[] = {
-		SWAP
-	};
-	word(vm, "swap", swap_arr, sizeof(swap_arr), MASK_VIS);
-	
-	char push_arr[] = {
-		PUSH
-	};
-	word(vm, "push", push_arr, sizeof(push_arr), MASK_VIS);
-	
-	char pop_arr[] = {
-		POP
-	};
-	word(vm, "pop", pop_arr, sizeof(pop_arr), MASK_VIS);
-	
-	char pickp_arr[] = {
-		PICKP
-	};
-	word(vm, "pickp", pickp_arr, sizeof(pickp_arr), MASK_VIS);
-	
-	char pickr_arr[] = {
-		PICKR
-	};
-	word(vm, "pickr", pickr_arr, sizeof(pickr_arr), MASK_VIS);
-	
-	
-	char jmp_arr[] = {
-		LIT, JMP, 0, LDH, STRB,
-		LIT, 1, 0, LDH, STRH
-	};
-	word(vm, "jmp", jmp_arr, sizeof(jmp_arr), MASK_VIS | MASK_IMM);
-	
-	char jz_arr[] = {
-		LIT, JZ, 0, LDH, STRB,
-		LIT, 1, 0, LDH, STRH
-	};
-	word(vm, "jz", jz_arr, sizeof(jz_arr), MASK_VIS | MASK_IMM);
-	
-	
-	char call_arr[] = {
-		LIT, CALL, 0, LDH, STRB,
-		LIT, 1, 0, LDH, STRH
-	};
-	word(vm, "call", call_arr, sizeof(call_arr), MASK_VIS | MASK_IMM);
-	
-	char ret_arr[] = {
-		LIT, RET, 0, LDH, STRB,
-		LIT, 1, 0, LDH, STRH
-	};
-	word(vm, "ret", ret_arr, sizeof(ret_arr), MASK_VIS | MASK_IMM);
-	
-	
-	char eq_arr[] = {
-		EQ
-	};
-	word(vm, "eq", eq_arr, sizeof(eq_arr), MASK_VIS);
-	
-	char neq_arr[] = {
-		NEQ
-	};
-	word(vm, "neq", neq_arr, sizeof(neq_arr), MASK_VIS);
-	
-	char lt_arr[] = {
-		LT
-	};
-	word(vm, "lt", lt_arr, sizeof(lt_arr), MASK_VIS);
-	
-	char gt_arr[] = {
-		GT
-	};
-	word(vm, "gt", gt_arr, sizeof(gt_arr), MASK_VIS);
-	
-	
-	
-	char _arr[] = {
-		
-	};
-	word(vm, "", _arr, sizeof(_arr), MASK_VIS);
-
-
-    AND, OR, XOR,
-    SHR, SHL,
-
-    ADD, SUB, MUL,
-    DIV, MOD,
-
-    LDC, STRC,
-    LDB, STRB,
-
-    LDS, STRS,
-
-    LDP, STRP,
-    LDR, STRR,
-
-    LDI, STRI,
-    LDH, STRH,
-    LDL, STRL,
-
-    KEY, EMIT,
-	*/
+*/
 }
 
-void repl(VM *vm) {
-	char buf[MAX_LEN + 1];
-	while(scanf("%31s", buf) != EOF) {
-		if(vm->s == INTERPRET)
-			interp(vm, buf);
-		else
-			comp(vm, buf);
-		run(vm);
-		vm->p = ON;
-	}
+
+void save(VM *vm, char *file) {
+	FILE *fp = fopen(file, "wb");
+	for(int i = 0; i < vm->hp; ++i)
+		putc(vm->mem[i], fp);
+	fclose(fp);
 }
 
-void interp(VM *vm, char *word) {}
-void comp(VM *vm, char *word) {}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void restore(VM *vm, char *file) {
+	int c;
+	FILE *fp = fopen(file, "rb");
+	while((c = getc(fp)) != EOF)
+		vm->mem[vm->hp++] = c;
+	fclose(fp);
+}
 
 
 
