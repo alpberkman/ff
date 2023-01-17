@@ -3,7 +3,7 @@
 
 
 
-: DUP DUP ;
+: DUP DUP ; TODO i need to do something 
 : DROP DROP ;
 : SWAP SWAP ;
 : >R POP SWAP PUSH PUSH ;
@@ -41,9 +41,9 @@
 : KEY KEY ;
 : EMIT EMIT ;
 
-: ALLOT LDH ADD STRH ;
 
 
+: asdfasdf ;
 
 
 

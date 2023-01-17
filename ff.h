@@ -419,6 +419,7 @@ void _eval(VM *vm) {
             vm->ip = vm->ip - 1;
         } else {
             vm->ip = vm->ip - 1;
+            printf("Error in interpreter: word not found %s\n", buf);
         }
     } else if(vm->s == COMPILE) {
         if(addr) {
@@ -444,6 +445,7 @@ void _eval(VM *vm) {
             vm->ip = vm->ip - 1;
             vm->psp = 0;
         	vm->rsp = 0;
+        	printf("Error in compiler: word not found %s\n", buf);
         }
     } else {
         vm->s = INTERPRET;
@@ -551,11 +553,6 @@ void words(VM *vm) {
     };
     word(vm, ";", semi_arr, sizeof(semi_arr), MASK_VIS | MASK_IMM);
     
-    char call_arr[] = {
-		CALL,
-	};
-	word(vm, "call", call_arr, sizeof(call_arr), MASK_VIS);
-
     char app_arr[] = {
         LDH, STRB, LDH, LIT, 1, 0, ADD, STRH,
     };

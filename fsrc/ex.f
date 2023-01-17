@@ -1,39 +1,34 @@
 
-: NOP
-	NOP LDH STRB
+: APP LDH STRB LDH 1 ADD STRH ;
+
+
+: LIT
+	LIT LDH STRB
 	LDH 1 ADD STRH
+	LDH STRC
+	LDH CSZ ADD STRH
 ;
+
+: NOP NOP APP ;
 
 
 : JMP
-	LIT LDH STRB
-	LDH 1 ADD STRH
-	LDH
-	LDH CSZ ADD STRH
-	JMP LDH STRB
-	LDH 1 ADD STRH
+	LDH 1 ADD
+	666 LIT
+	JMP APP
 ;
 
 : JZ
-	LIT LDH STRB
-	LDH 1 ADD STRH
-	LDH
-	LDH CSZ ADD STRH
-	JZ LDH STRB
-	LDH 1 ADD STRH
+	LDH 1 ADD
+	666 LIT
+	JZ APP
 ;
 
 
-: CALL
-	CALL LDH STRB
-	LDH 1 ADD STRH
-;
+: CALL CALL APP ;
 
 
-: RET
-	RET LDH STRB
-	LDH 1 ADD STRH
-;
+: RET RET APP ;
 
 
 
@@ -47,18 +42,90 @@
 
 
 : IF JZ ; IMMEDIATE
-
 : THEN LDH SWAP STRC ; IMMEDIATE
-
-: ELSE LDH CSZ ADD 2 ADD SWAP STRC JMP ; IMMEDIATE
+: ELSE JMP SWAP LDH SWAP STRC ; IMMEDIATE
 
 
 : ( KEY 41 NEQ IF SELF THEN ; IMMEDIATE
 : \ KEY 10 NEQ IF SELF THEN ; IMMEDIATE
+: TODO KEY DUP EMIT 10 NEQ IF SELF THEN ; IMMEDIATE
 
 
 : EXIT RET ; IMMEDIATE
 : BYE HALT ;
+
+
+: ALLOT LDH ADD STRH ;
+
+
+: BEGIN LDH ; IMMEDIATE
+: AGAIN JMP STRC ; IMMEDIATE
+: UNTIL JZ STRC ; IMMEDIATE
+: WHILE JZ ; IMMEDIATE
+: REPEAT SWAP JMP STRC LDH SWAP STRC ; IMMEDIATE
+
+
+: ." KEY DUP 34 NEQ IF APP SELF THEN DROP 0 APP ;
+: ." JMP LDH ." SWAP LDH SWAP STRC LIT ; IMMEDIATE
+: PRINT BEGIN DUP LDB 0 NEQ WHILE DUP LDB EMIT 1 ADD REPEAT DROP ;
+
+\ void print(char *str) {
+\ 	while(*c != 0) {
+\ 		putchar(*c);
+\ 		c += 1;
+\ 	}
+\ }
+
+\ : print ( addr -- )
+\ 	begin dup c@ 0 != while
+\ 		dup c@ emit
+\ 		1+
+\ 	repeat
+\ 	drop
+\ ;
+
+
+
+\ : PX LDS IF ." ELSE
+\ : P DUP LDB DUP 0 EQ IF DROP DROP EXIT ELSE EMIT 1 ADD SELF THEN ;
+
+( : ."
+	." LIT
+	LDH
+	dup ldb dup 0 eq if drop drop exit then emit 1 add
+	dup ldb emit 1 add
+	JMP STRC
+; IMMEDIATE
+
+)
+
+ : xxx ." asdfasdf" print ;
+ deb xxx deb
+( bye
+
+
+
+
+
+
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
