@@ -1,21 +1,24 @@
-: BYE HALT ;
+
+: ideb deb ; immediate
+
+
 
 : DUP DUP ;
 : DROP DROP ;
 : SWAP SWAP ;
-: PUSH PUSH ;
-: POP POP ;
+: >R POP SWAP PUSH PUSH ;
+: R> POP POP SWAP PUSH ;
 : PICK PICKP ;
-: RICK PICKR ;
+: RICK 1 ADD PICKR ;
 
 : = EQ ;
 : != NEQ ;
 : < LT ;
 : > GT ;
 
-: AND AND ;
-: OR OR ;
-: XOR XOR ;
+: & AND ;
+: | OR ;
+: ^ XOR ;
 : >> SHR ;
 : << SHL ;
 
@@ -23,7 +26,7 @@
 : - SUB ;
 : * MUL ;
 : / DIV ;
-: MOD MOD ;
+: % MOD ;
 
 : @ LDC ;
 : ! STRC ;
@@ -37,6 +40,26 @@
 
 : KEY KEY ;
 : EMIT EMIT ;
+
+: ALLOT LDH ADD STRH ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,6 @@
 
 CC ?= gcc
-CFLAGS ?= -Wall -O2
+CFLAGS ?= -Wall -Wextra -O2
 DFLAGS ?= -g
 SFLAGS ?= -Os -s
 

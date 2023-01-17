@@ -82,6 +82,9 @@ enum op {
     LDL, STRL,
 
     KEY, EMIT,
+    
+    CSZ,
+    
     COL, SEMI, EVAL, DEB,
 };
 
@@ -335,6 +338,10 @@ void _emit(VM *vm) {
     putchar(c);
 }
 
+void _csz(VM *vm) {
+	vm->ps[vm->psp++] = sizeof(cell);
+}
+
 
 void _col(VM *vm) {
 
@@ -435,17 +442,31 @@ void _eval(VM *vm) {
             vm->hp = vm->lp;
             vm->lp = *((ptr *) &(vm->mem[vm->lp]));
             vm->ip = vm->ip - 1;
+            vm->psp = 0;
+        	vm->rsp = 0;
         }
     } else {
         vm->s = INTERPRET;
         vm->ip = vm->ip - 1;
+        vm->psp = 0;
+        vm->rsp = 0;
     }
 }
 
 void _deb(VM *vm) {
+	printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
     printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
-    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i)
-        printf("%10i\t%10i\n", vm->ps[i], vm->rs[i]);
+    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
+    	if(vm->psp > i)
+    		printf("%10i\t", vm->ps[i]);
+    	else
+    		printf("          \t");
+    	if(vm->rsp > i)
+    		printf("%10i\n", vm->rs[i]);
+    	else
+    		printf("          \n");
+    }
+    printf("\n\n");
 }
 
 
@@ -458,7 +479,7 @@ fun prims[] = {
     _ldc, _strc, _ldb, _strb, _lds, _strs,
     _ldp, _strp, _ldr, _strr, _ldi, _stri,
     _ldh, _strh, _ldl, _strl, _key, _emit,
-    _col, _semi, _eval, _deb,
+    _csz, _col, _semi, _eval, _deb,
 };
 
 void init(VM *vm) {
@@ -506,7 +527,7 @@ void word(VM *vm, char *name, char *fun, int len, char flag) {
 
     vm->mem[vm->hp++] = strlen(name) | flag;
 
-    for(int i = 0; i < strlen(name); ++i)
+    for(unsigned int i = 0; i < strlen(name); ++i)
         vm->mem[vm->hp + i] = name[i] - (name[i] >= 'a' && name[i] <= 'z' ? 'a' - 'A' : 0);
     vm->hp += strlen(name);
 
@@ -520,16 +541,6 @@ void word(VM *vm, char *name, char *fun, int len, char flag) {
 
 void words(VM *vm) {
 
-    char bapp_arr[] = {
-        LDH, STRB, LDH, LIT, 1, 0, ADD, STRH,
-    };
-    word(vm, "bapp", bapp_arr, sizeof(bapp_arr), MASK_VIS | MASK_IMM);
-
-    char capp_arr[] = {
-        LDH, STRC, LDH, LIT, 2, 0, ADD, STRH,
-    };
-    word(vm, "capp", capp_arr, sizeof(capp_arr), MASK_VIS | MASK_IMM);
-
     char col_arr[] = {
         COL,
     };
@@ -539,6 +550,16 @@ void words(VM *vm) {
         SEMI,
     };
     word(vm, ";", semi_arr, sizeof(semi_arr), MASK_VIS | MASK_IMM);
+    
+    char call_arr[] = {
+		CALL,
+	};
+	word(vm, "call", call_arr, sizeof(call_arr), MASK_VIS);
+
+    char app_arr[] = {
+        LDH, STRB, LDH, LIT, 1, 0, ADD, STRH,
+    };
+    word(vm, "app", app_arr, sizeof(app_arr), MASK_VIS | MASK_IMM);
 
 }
 
@@ -549,9 +570,17 @@ void debug(VM *vm) {
     printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
 
     printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
-    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i)
-        printf("%10i\t%10i\n", vm->ps[i], vm->rs[i]);
-
+        for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
+    	if(vm->psp > i)
+    		printf("%10i\t", vm->ps[i]);
+    	else
+    		printf("          \t");
+    	if(vm->rsp > i)
+    		printf("%10i\n", vm->rs[i]);
+    	else
+    		printf("          \n");
+    }
+    
     printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
     for(int i = 0; i < vm->hp; ++i)
         printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
