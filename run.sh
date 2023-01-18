@@ -1,1 +1,1 @@
-clear && cat fsrc/op.f fsrc/ex.f - | ./ff
+clear && cat fsrc/op.f fsrc/ex.f fsrc/pg.f - | ./ff
