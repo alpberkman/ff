@@ -31,6 +31,10 @@
 : RET RET APP ;
 
 
+: LEQ 1 PICKP 1 PICKP EQ PUSH LT POP OR ;
+: GEQ 1 PICKP 1 PICKP EQ PUSH GT POP OR ;
+: BET PUSH 1 PICKP LEQ SWAP POP LEQ AND ;
+
 
 : IMMEDIATE LDL CSZ ADD DUP LDB 1 6 SHL OR SWAP STRB ;
 : VISIBLE LDL CSZ ADD DUP LDB 1 7 SHL OR SWAP STRB ; IMMEDIATE
@@ -59,13 +63,6 @@
 	THEN
 	DUP EMIT 10 NEQ IF SELF THEN
 ; IMMEDIATE
-(
-WARN Now warn can be made multiline by appending \ at the end of\
-a line. The only caveat is that the last character before \ cant\
-be \ itself \ \
-Just like in the example above a, if you want the last  character\
-be a \ just put a space after the backslash
-)
 
 : EXIT RET ; IMMEDIATE
 : BYE HALT ;
@@ -81,18 +78,42 @@ be a \ just put a space after the backslash
 : REPEAT SWAP JMP STRC LDH SWAP STRC ; IMMEDIATE
 
 
+: LAST LDL ;
+: NEXT LDC ;
+: N-NEXT 0 LAST PUSH
+	BEGIN 1 PICKP 1 PICKP GT WHILE
+		POP NEXT PUSH 1 ADD
+	REPEAT DROP DROP POP
+;
+: FORGET LDL LDC STRL ;
 
 
+: DUMP DUP
+	CSZ ADD DUP LDB 31 AND SWAP 1 ADD
+	SWAP 1 PICKP ADD SWAP
+	BEGIN 1 PICKP 1 PICKP GT WHILE DUP LDB EMIT 1 ADD REPEAT
+	32 EMIT
+	DROP DROP
+	DUP 0 NEQ IF LDC SELF ELSE DROP THEN
+;
+: DUMP LDL DUMP 10 EMIT ;
+FORGET FORGET
 
 
+: CR ( --) 13 EMIT 10 EMIT ;
 
 
+: . 48 EMIT 120 EMIT PUSH CSZ 8 MUL 0
+	BEGIN 1 PICKP 1 PICKP GT WHILE
+		POP DUP 4 SHL PUSH 
+		CSZ 8 MUL 4 SUB SHR 15 AND 
+		DUP 0 9 BET IF 48 ELSE 55 THEN 
+		ADD EMIT
+		4 ADD
+	REPEAT POP DROP DROP DROP
+;
 
-
-
-
-
-
+: N-INVIS N-NEXT CSZ ADD DUP LDB 1 7 SHL XOR SWAP STRB ;
 
 
 

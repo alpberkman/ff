@@ -22,3 +22,11 @@
 : z begin dup 10 lt while dup 1 add repeat ;
 0 z deb
 
+
+WARN Now warn can be made multiline by appending \ at the end of\
+a line. The only caveat is that the last character before \ cant\
+be \ itself \ \
+Just like in the example above a, if you want the last  character\
+be a \ just put a space after the backslash
+
+
