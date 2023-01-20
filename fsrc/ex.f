@@ -35,8 +35,8 @@
 : FALSE 0 ;
 
 
-: LEQ 1 PICKP 1 PICKP EQ PUSH LT POP OR ;
-: GEQ 1 PICKP 1 PICKP EQ PUSH GT POP OR ;
+: LEQ GT -1 XOR ;
+: GEQ LT -1 XOR ;
 : BET PUSH 1 PICKP LEQ SWAP POP LEQ AND ;
 
 
@@ -101,7 +101,19 @@
 	DUP 0 NEQ IF LDC SELF ELSE DROP THEN
 ;
 : DUMP LDL DUMP 10 EMIT ;
-FORGET FORGET
+FORGET FORGET WARN this dump function is forgotten
+(
+: DUMP DUP DUP CSZ ADD LDB 1 7 SHL AND IF
+        CSZ ADD DUP LDB 31 AND SWAP 1 ADD \ Get the starting address and the length
+        SWAP 1 PICKP ADD SWAP \ Calculate the end address
+        BEGIN 1 PICKP 1 PICKP GT WHILE DUP LDB EMIT 1 ADD REPEAT \ Print the word
+        32 EMIT \ Print space
+        DROP DROP \ Remove the addresses 
+	ELSE DROP THEN
+	DUP 0 NEQ IF LDC SELF THEN DROP \ Call itself if it hasn' t reached the end of the list
+; WARN this dump function only prints visible words
+)
+
 
 
 : CR ( --) 13 EMIT 10 EMIT ;

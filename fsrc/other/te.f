@@ -54,7 +54,13 @@ be a \ just put a space after the backslash
 
 
 
-
+\ clear
+LDH 10 ALLOT
+DUP 5 EXPECT 12345
+LDH 10 ALLOT
+DUP
+DUP 5 EXPECT 12340
+5 MEMCMP . cr
 
 
 
