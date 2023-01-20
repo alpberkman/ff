@@ -11,6 +11,7 @@ int main() {
     words(&vm);
     run(&vm);
     debug(&vm);
+    dump(&vm, "dump.c");
 
 
     return 0;

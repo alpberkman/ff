@@ -601,6 +601,17 @@ void restore(VM *vm, char *file) {
     fclose(fp);
 }
 
+void dump(VM *vm, char *file) {
+	FILE *fp = fopen(file, "w");
+	fprintf(fp, "{ ");
+	for(int i = 0; i < vm->hp; ++i) {
+		if(i % 8 == 0)
+			fprintf(fp, "\n");
+		fprintf(fp, "%#05x, ", vm->mem[i]);
+	}
+	fprintf(fp, "\n};");
+	
+}
 
 
 
