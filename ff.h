@@ -503,7 +503,7 @@ void init(VM *vm) {
     vm->mem[1] = HALT;
 
     vm->ip = 0;
-    vm->hp = 2;
+    vm->hp = sizeof(cell) + 3;
     vm->lp = 0;
 }
 

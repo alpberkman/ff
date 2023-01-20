@@ -49,6 +49,9 @@ be a \ just put a space after the backslash
 \ Prints the words along with their addresses
 
 
+: x deb WARN deb is renamed as x
+;
+
 
 
 

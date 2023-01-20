@@ -31,6 +31,10 @@
 : RET RET APP ;
 
 
+: TRUE -1 ;
+: FALSE 0 ;
+
+
 : LEQ 1 PICKP 1 PICKP EQ PUSH LT POP OR ;
 : GEQ 1 PICKP 1 PICKP EQ PUSH GT POP OR ;
 : BET PUSH 1 PICKP LEQ SWAP POP LEQ AND ;
@@ -84,7 +88,7 @@
 	BEGIN 1 PICKP 1 PICKP GT WHILE
 		POP NEXT PUSH 1 ADD
 	REPEAT DROP DROP POP
-;
+; WARN n-next doesnt stop at 0
 : FORGET LDL LDC STRL ;
 
 
@@ -114,10 +118,12 @@ FORGET FORGET
 ;
 
 : N-INVIS N-NEXT CSZ ADD DUP LDB 1 7 SHL XOR SWAP STRB ;
+WARN n-invis still counts the invisible words because n-next does it too
 
 
 : NOT -1 XOR ;
 
+: CLEAR 27 EMIT 99 EMIT ;
 
 
 
