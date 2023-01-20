@@ -19,11 +19,9 @@ dump cr
 
 
 
-4369 . 	WARN  0x1111
-4660 . 	WARN  0x1234
-1 . 	WARN  0x0001
-123 . 	WARN  0x007B
-43981 . WARN  0xABCD
+
+: x deb WARN deb is renamed as x
+;
 
 
 
