@@ -12,7 +12,7 @@ int main() {
     run(&vm);
     debug(&vm);
     dump(&vm, "dump.c");
-    save(&vm, "mem");
+    save(&vm, "dump.mem");
 
 
     return 0;
