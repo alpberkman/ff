@@ -80,6 +80,10 @@
 : UNTIL JZ STRC ; IMMEDIATE
 : WHILE JZ ; IMMEDIATE
 : REPEAT SWAP JMP STRC LDH SWAP STRC ; IMMEDIATE
+: CONTINUE 2 PICKP JMP STRC ; IMMEDIATE 
+WARN the depth of the stack is important when compiling\
+2 PICKP would only work with a single if since it too does\
+use the parameter stack to save the jump address
 
 
 : LAST LDL ;

@@ -4,7 +4,7 @@
 : DUMP DUP DUP CSZ ADD LDB 1 7 SHL AND IF
         CSZ ADD DUP LDB 31 AND SWAP 1 ADD \ Get the starting address and the length
         SWAP 1 PICKP ADD SWAP \ Calculate the end address
-        BEGIN 1 PICKP 1 PICKP GT WHILE DUP LDB EMIT 1 ADD REPEAT \ Print the word
+        BEGIN 1 PICKP 1 PICKP GT WHILE DUP LDB tolower EMIT 1 ADD REPEAT \ Print the word
         32 EMIT \ Print space
         DROP DROP \ Remove the addresses 
 	ELSE DROP THEN
@@ -36,11 +36,13 @@ dump cr
 		DUP 39 EQ IF DROP 39 THEN
 		DUP 34 EQ IF DROP 34 THEN
 		DUP 63 EQ IF DROP 63 THEN
+		DUP 115 EQ IF DROP 32 THEN \ for space can use \s
 	THEN LIT
 ; IMMEDIATE
 
 : SPACE [CHAR]   EMIT ;
 : ISDIGIT [CHAR] 0 [CHAR] 9 bet ;
+
 
 
 
