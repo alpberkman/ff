@@ -1,6 +1,6 @@
 
 : ILIT LIT ; IMMEDIATE
-
+: TOLOWER DUP 65 90 bet IF 32 ADD THEN ;
 : DUMP DUP DUP CSZ ADD LDB 1 7 SHL AND IF
         CSZ ADD DUP LDB 31 AND SWAP 1 ADD \ Get the starting address and the length
         SWAP 1 PICKP ADD SWAP \ Calculate the end address
@@ -20,38 +20,17 @@ clear
 WARN Welcome to the Playground
 dump cr
 
+: [ 0 STRS ; IMMEDIATE
+: ] 1 STRS ;
+
+LDH 80 ALLOT
+deb
+: TIB [ LIT ] ;
+deb
 
 
-: [CHAR]
-	KEY DUP 92 EQ IF DROP KEY
-		DUP 97 EQ IF DROP 7 THEN
-		DUP 98 EQ IF DROP 8 THEN
-		DUP 101 EQ IF DROP 27 THEN
-		DUP 102 EQ IF DROP 12 THEN
-		DUP 110 EQ IF DROP 10 THEN
-		DUP 114 EQ IF DROP 13 THEN
-		DUP 116 EQ IF DROP 9 THEN
-		DUP 118 EQ IF DROP 11 THEN
-		DUP 92 EQ IF DROP 92 THEN
-		DUP 39 EQ IF DROP 39 THEN
-		DUP 34 EQ IF DROP 34 THEN
-		DUP 63 EQ IF DROP 63 THEN
-		DUP 115 EQ IF DROP 32 THEN \ for space can use \s
-	THEN LIT
-; IMMEDIATE
-
-: SPACE [CHAR]   EMIT ;
-: ISDIGIT [CHAR] 0 [CHAR] 9 bet ;
-
-
-
-
-
-
-
-
-
-
+LDH CSZ ALLOT
+: #TIB [ LIT ] ;
 
 
 

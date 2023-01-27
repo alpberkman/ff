@@ -88,6 +88,7 @@ SPAN LDC TYPE CR
 	IF TONUM ELSE DROP DROP THEN POP
 ;
 
+(
 \ clear
 LDH 40
 DUP ALLOT
@@ -96,7 +97,7 @@ DUP ALLOT
 1 PICKP SPAN LDC num
 
 deb
-
+)
 
 
 
