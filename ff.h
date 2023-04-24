@@ -14,6 +14,9 @@
 #define MASK_IMM (1<<6)
 #define WORD_LEN (0x1f)
 
+#define CELL_SIZE ((cell) sizeof(cell))
+#define CFUN_SIZE ((cell) sizeof(fun))
+
 
 typedef struct VM VM;
 typedef enum power power;
@@ -24,9 +27,6 @@ typedef signed short cell;
 typedef unsigned char byte;
 
 typedef enum op op;
-
-#define CELL_SIZE ((cell) sizeof(cell))
-#define CFUN_SIZE ((cell) sizeof(fun))
 
 
 enum power {
@@ -88,12 +88,11 @@ enum op {
 
     CSZ, CFUN,
     KEY, EMIT, CALL,
-
-    COL, SEMI, INTERP, DEB,
 };
 
 
 void _nop(VM *vm) {
+	(void) vm;
 }
 
 void _lit(VM *vm) {
@@ -336,136 +335,6 @@ void _cfun(VM *vm) {
     cfun(vm);
 }
 
-/*
-void _col(VM *vm) {
-
-    char buf[32];
-    int c;
-    while(isspace(c = getchar()));
-
-    byte len = 0;
-    do {
-        if(c == EOF)
-            return;
-        buf[len++] = c - (c >= 'a' && c <= 'z' ? 'a' - 'A' : 0);
-    } while(len < 31 && !isspace(c = getchar()));
-    buf[len] = '\0';
-
-    vm->s = COMPILE;
-
-    *((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
-    vm->lp = vm->hp;
-    vm->hp += CELL_SIZE;
-
-    byte i;
-    for(i = 0; buf[i] != '\0'; ++i)
-        vm->mem[vm->hp + 1 + i] = buf[i];
-
-    vm->mem[vm->hp] = i;
-    vm->hp += 1 + i;
-}
-
-void _semi(VM *vm) {
-    vm->mem[vm->hp++] = RET;
-    vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
-    vm->s = INTERPRET;
-}
-
-void _interp(VM *vm) {
-
-    char buf[32];
-    int c;
-    while(isspace(c = getchar()));
-
-    byte len = 0;
-    do {
-        if(c == EOF)
-            return;
-        buf[len++] = c - (c >= 'a' && c <= 'z' ? 'a' - 'A' : 0);
-    } while(len < 31 && !isspace(c = getchar()));
-    buf[len] = '\0';
-
-    cell addr;
-    byte flags;
-
-    for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
-        if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
-                break;
-    }
-
-    cell num = 0;
-    byte nflag = 0;
-
-    if(addr == 0) {
-        nflag = strspn(buf, "1234567890-+") == len;
-        if(nflag)
-            num = atoi(buf);
-    }
-
-    if(vm->s == INTERPRET) {
-        if(addr) {
-            vm->rs[vm->rsp++] = vm->ip - 1;
-            vm->ip = addr + CELL_SIZE + 1 + len;
-        } else if(nflag) {
-            vm->ps[vm->psp++] = num;
-            vm->ip = vm->ip - 1;
-        } else {
-            vm->ip = vm->ip - 1;
-            printf("Error in interpreter: word not found %s\n", buf);
-        }
-    } else if(vm->s == COMPILE) {
-        if(addr) {
-            if(flags & MASK_IMM) {
-                vm->rs[vm->rsp++] = vm->ip - 1;
-                vm->ip = addr + CELL_SIZE + 1 + len;
-            } else {
-                vm->mem[vm->hp++] = LIT;
-                *((cell *) &(vm->mem[vm->hp])) = addr + CELL_SIZE + 1 + len;
-                vm->hp += CELL_SIZE;
-                vm->mem[vm->hp++] = CALL;
-                vm->ip = vm->ip - 1;
-            }
-        } else if(nflag) {
-            vm->mem[vm->hp++] = LIT;
-            *((cell *) &(vm->mem[vm->hp])) = num;
-            vm->hp += CELL_SIZE;
-            vm->ip = vm->ip - 1;
-        } else {
-            vm->s = INTERPRET;
-            vm->hp = vm->lp;
-            vm->lp = *((cell *) &(vm->mem[vm->lp]));
-            vm->ip = vm->ip - 1;
-            vm->psp = 0;
-            vm->rsp = 0;
-            printf("Error in compiler: word not found %s\n", buf);
-        }
-    } else {
-        vm->s = INTERPRET;
-        vm->ip = vm->ip - 1;
-        vm->psp = 0;
-        vm->rsp = 0;
-    }
-}
-
-void _deb(VM *vm) {
-    printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
-    printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
-    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
-        if(vm->psp > i)
-            printf("%10i\t", vm->ps[i]);
-        else
-            printf("          \t");
-        if(vm->rsp > i)
-            printf("%10i\n", vm->rs[i]);
-        else
-            printf("          \n");
-    }
-    printf("\n\n");
-}
-*/
-
 
 cell opcode(VM *vm) {
 	cell addr = *((cell *) &(vm->mem[vm->ip]));
@@ -520,12 +389,6 @@ void exec(VM *vm, cell addr) {
 		case CFUN: _cfun(vm); break;
 		case KEY: _key(vm); break;
 		case EMIT: _emit(vm); break;
-/*
-		case COL: _col(vm); break;
-		case SEMI: _semi(vm); break;
-		case INTERP: _interp(vm); break;
-		case DEB: _deb(vm); break;
-*/
     	default:
     		vm->rs[vm->rsp++] = vm->ip;
     		vm->ip = addr;
@@ -565,11 +428,17 @@ void init(VM *vm) {
     vm->ip = 0;
     vm->hp = 0;
     vm->lp = 0;
+    
+    *((cell *) &(vm->mem[vm->hp])) = NOP;
+    vm->hp += CELL_SIZE;
+    *((cell *) &(vm->mem[vm->hp])) = HALT;
+    vm->hp += CELL_SIZE;
 }
 
+cell word(VM *vm, char *name, char *fun, int len, char flag) {
 
-/*
-void word(VM *vm, char *name, char *fun, int len, char flag) {
+	cell i;
+	cell addr;
 
     *((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
     vm->lp = vm->hp;
@@ -577,68 +446,58 @@ void word(VM *vm, char *name, char *fun, int len, char flag) {
 
     vm->mem[vm->hp++] = strlen(name) | flag;
 
-    for(unsigned int i = 0; i < strlen(name); ++i)
-        vm->mem[vm->hp + i] = name[i] - (name[i] >= 'a' && name[i] <= 'z' ? 'a' - 'A' : 0);
+    for(i = 0; i < (short) strlen(name); ++i)
+        vm->mem[vm->hp + i] = toupper(name[i]);
     vm->hp += strlen(name);
 
-    for(int i = 0; i < len; ++i) {
+	addr = vm->hp;
+    for(i = 0; i < len; ++i)
         vm->mem[vm->hp + i] = fun[i];
-    }
     vm->hp += len;
-
-    vm->mem[vm->hp++] = RET;
     
+    return addr;
+}
 
-	*((cell *) &(vm->mem[vm->hp])) = INTERP;
-	vm->hp += CELL_SIZE;
-    *((cell *) &(vm->mem[vm->hp])) = HALT;
+cell cword(VM *vm, char *name, fun cfun, char flag) {
+
+	cell i;
+	cell addr;
+
+    *((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
+    vm->lp = vm->hp;
     vm->hp += CELL_SIZE;
 
+    vm->mem[vm->hp++] = strlen(name) | flag;
+
+    for(i = 0; i < (short) strlen(name); ++i)
+        vm->mem[vm->hp + i] = toupper(name[i]);
+    vm->hp += strlen(name);
+
+	addr = vm->hp;
+    *((cell *) &(vm->mem[vm->hp])) = CFUN;
+    vm->hp += CELL_SIZE;
+    *((fun *) &(vm->mem[vm->hp])) = cfun;
+    vm->hp += CFUN_SIZE;
+    *((cell *) &(vm->mem[vm->hp])) = RET;
+    vm->hp += CELL_SIZE;
+
+    return addr;
 }
 
+void x(VM *vm) {
+	puts("Hello");
+	(void)vm;
+}
 void words(VM *vm) {
-
-    char col_arr[] = {
-        COL,
+	cell addr;
+	cell arr[] = {
+        LIT, 4, LIT, 5, ADD, RET,
     };
-    word(vm, ":", col_arr, sizeof(col_arr), MASK_VIS);
 
-    char semi_arr[] = {
-        SEMI,
-    };
-    word(vm, ";", semi_arr, sizeof(semi_arr), MASK_VIS | MASK_IMM);
-
-    char app_arr[] = {
-        LDH, STRB, LDH, LIT, 1, 0, ADD, STRH,
-    };
-    word(vm, "app", app_arr, sizeof(app_arr), MASK_VIS | MASK_IMM);
-
-}
-*/
-
-void debug(VM *vm) {
-	int i;
-    printf("Debug Info\n");
-    printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
-    printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
-
-    printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
-    for(i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
-        if(vm->psp > i)
-            printf("%10i\t", vm->ps[i]);
-        else
-            printf("          \t");
-        if(vm->rsp > i)
-            printf("%10i\n", vm->rs[i]);
-        else
-            printf("          \n");
-    }
-
-    printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
-    for(i = 0; i < vm->hp; ++i)
-        printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
-
-    printf("\n\n");
+    addr = cword(vm, "hello", x, MASK_VIS | MASK_IMM);
+	*((cell *) &(vm->mem[0])) = addr;
+	addr = word(vm, "test", (char *) arr, sizeof(arr), MASK_VIS);
+	*((cell *) &(vm->mem[0])) = addr;
 }
 
 
@@ -646,14 +505,14 @@ void save(VM *vm, char *file) {
 	int i;
     FILE *fp = fopen(file, "wb");
     for(i = 0; i < vm->hp; ++i)
-        putc(vm->mem[i], fp);
+        fputc(vm->mem[i], fp);
     fclose(fp);
 }
 
 void restore(VM *vm, char *file) {
     int c;
     FILE *fp = fopen(file, "rb");
-    while((c = getc(fp)) != EOF)
+    while((c = fgetc(fp)) != EOF)
         vm->mem[vm->hp++] = c;
     fclose(fp);
 }
@@ -672,8 +531,52 @@ void dump(VM *vm, char *file) {
 }
 
 
+void debug_state(VM *vm) {
+    printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
+    printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
+    printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
+}
 
+void debug_stack(VM *vm) {
+	int i;
+    printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
+    for(i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
+        if(vm->psp > i)
+            printf("%10i\t", vm->ps[i]);
+        else
+            printf("          \t");
 
+        if(vm->rsp > i)
+            printf("%10i\n", vm->rs[i]);
+        else
+            printf("          \n");
+    }
+}
 
+void debug_mem(VM *vm) {
+	int i;
+    for(i = 0; i < vm->hp; ++i)
+        printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
+}
+
+void debug_words(VM *vm) {
+	cell addr;
+	for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
+		printf("0x%04x : %.*s : %s%s\n", addr,
+		vm->mem[addr+CELL_SIZE] & WORD_LEN, &(vm->mem[addr+CELL_SIZE+1]),
+		vm->mem[addr+CELL_SIZE] & MASK_VIS ? "VIS ": "",
+		vm->mem[addr+CELL_SIZE] & MASK_IMM ? "IMM ": "");
+	}
+}
+
+void debug(VM *vm) {
+	printf("Debug Info\n");
+	debug_state(vm);
+	debug_stack(vm);
+	puts("");
+	debug_words(vm);
+	puts("");
+	puts("");
+}
 
 
