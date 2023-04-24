@@ -92,7 +92,7 @@ enum op {
 
 
 void _nop(VM *vm) {
-	(void) vm;
+    (void) vm;
 }
 
 void _lit(VM *vm) {
@@ -330,73 +330,163 @@ void _csz(VM *vm) {
 }
 
 void _cfun(VM *vm) {
-	fun cfun = *((fun *) &(vm->mem[vm->ip]));
+    fun cfun = *((fun *) &(vm->mem[vm->ip]));
     vm->ip += CFUN_SIZE;
     cfun(vm);
 }
 
 
 cell opcode(VM *vm) {
-	cell addr = *((cell *) &(vm->mem[vm->ip]));
-	vm->ip += CELL_SIZE;
+    cell addr = *((cell *) &(vm->mem[vm->ip]));
+    vm->ip += CELL_SIZE;
     return addr;
 }
 
 void exec(VM *vm, cell addr) {
     switch(addr) {
-		case NOP: _nop(vm); break;
-		case LIT: _lit(vm); break;
-		case HALT: _halt(vm); break;
-		case DUP: _dup(vm); break;
-		case DROP: _drop(vm); break;
-		case SWAP: _swap(vm); break;
-		case PUSH: _push(vm); break;
-		case POP: _pop(vm); break;
-		case PICKP: _pickp(vm); break;
-		case PICKR: _pickr(vm); break;
-		case JMP: _jmp(vm); break;
-		case JZ: _jz(vm); break;
-		case RET: _ret(vm); break;
-		case EQ: _eq(vm); break;
-		case NEQ: _neq(vm); break;
-		case LT: _lt(vm); break;
-		case GT: _gt(vm); break;
-		case AND: _and(vm); break;
-		case OR: _or(vm); break;
-		case XOR: _xor(vm); break;
-		case SHR: _shr(vm); break;
-		case SHL: _shl(vm); break;
-		case ADD: _add(vm); break;
-		case SUB: _sub(vm); break;
-		case MUL: _mul(vm); break;
-		case DIV: _div(vm); break;
-		case MOD: _mod(vm); break;
-		case LDC: _ldc(vm); break;
-		case STRC: _strc(vm); break;
-		case LDB: _ldb(vm); break;
-		case STRB: _strb(vm); break;
-		case LDS: _lds(vm); break;
-		case STRS: _strs(vm); break;
-		case LDP: _ldp(vm); break;
-		case STRP: _strp(vm); break;
-		case LDR: _ldr(vm); break;
-		case STRR: _strr(vm); break;
-		case LDH: _ldh(vm); break;
-		case STRH: _strh(vm); break;
-		case LDL: _ldl(vm); break;
-		case STRL: _strl(vm); break;
-		case CSZ: _csz(vm); break;
-		case CFUN: _cfun(vm); break;
-		case KEY: _key(vm); break;
-		case EMIT: _emit(vm); break;
-    	default:
-    		vm->rs[vm->rsp++] = vm->ip;
-    		vm->ip = addr;
+    case NOP:
+        _nop(vm);
+        break;
+    case LIT:
+        _lit(vm);
+        break;
+    case HALT:
+        _halt(vm);
+        break;
+    case DUP:
+        _dup(vm);
+        break;
+    case DROP:
+        _drop(vm);
+        break;
+    case SWAP:
+        _swap(vm);
+        break;
+    case PUSH:
+        _push(vm);
+        break;
+    case POP:
+        _pop(vm);
+        break;
+    case PICKP:
+        _pickp(vm);
+        break;
+    case PICKR:
+        _pickr(vm);
+        break;
+    case JMP:
+        _jmp(vm);
+        break;
+    case JZ:
+        _jz(vm);
+        break;
+    case RET:
+        _ret(vm);
+        break;
+    case EQ:
+        _eq(vm);
+        break;
+    case NEQ:
+        _neq(vm);
+        break;
+    case LT:
+        _lt(vm);
+        break;
+    case GT:
+        _gt(vm);
+        break;
+    case AND:
+        _and(vm);
+        break;
+    case OR:
+        _or(vm);
+        break;
+    case XOR:
+        _xor(vm);
+        break;
+    case SHR:
+        _shr(vm);
+        break;
+    case SHL:
+        _shl(vm);
+        break;
+    case ADD:
+        _add(vm);
+        break;
+    case SUB:
+        _sub(vm);
+        break;
+    case MUL:
+        _mul(vm);
+        break;
+    case DIV:
+        _div(vm);
+        break;
+    case MOD:
+        _mod(vm);
+        break;
+    case LDC:
+        _ldc(vm);
+        break;
+    case STRC:
+        _strc(vm);
+        break;
+    case LDB:
+        _ldb(vm);
+        break;
+    case STRB:
+        _strb(vm);
+        break;
+    case LDS:
+        _lds(vm);
+        break;
+    case STRS:
+        _strs(vm);
+        break;
+    case LDP:
+        _ldp(vm);
+        break;
+    case STRP:
+        _strp(vm);
+        break;
+    case LDR:
+        _ldr(vm);
+        break;
+    case STRR:
+        _strr(vm);
+        break;
+    case LDH:
+        _ldh(vm);
+        break;
+    case STRH:
+        _strh(vm);
+        break;
+    case LDL:
+        _ldl(vm);
+        break;
+    case STRL:
+        _strl(vm);
+        break;
+    case CSZ:
+        _csz(vm);
+        break;
+    case CFUN:
+        _cfun(vm);
+        break;
+    case KEY:
+        _key(vm);
+        break;
+    case EMIT:
+        _emit(vm);
+        break;
+    default:
+        vm->rs[vm->rsp++] = vm->ip;
+        vm->ip = addr;
     }
 }
 
 void cycle(VM *vm) {
-	exec(vm, opcode(vm));
+    exec(vm, opcode(vm));
 }
 
 void run(VM *vm) {
@@ -406,8 +496,8 @@ void run(VM *vm) {
 
 
 void init(VM *vm) {
-	
-	int i;
+
+    int i;
 
     vm->p = ON;
     vm->s = INTERPRET;
@@ -428,7 +518,7 @@ void init(VM *vm) {
     vm->ip = 0;
     vm->hp = 0;
     vm->lp = 0;
-    
+
     *((cell *) &(vm->mem[vm->hp])) = NOP;
     vm->hp += CELL_SIZE;
     *((cell *) &(vm->mem[vm->hp])) = HALT;
@@ -437,8 +527,8 @@ void init(VM *vm) {
 
 cell word(VM *vm, char *name, char *fun, int len, char flag) {
 
-	cell i;
-	cell addr;
+    cell i;
+    cell addr;
 
     *((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
     vm->lp = vm->hp;
@@ -450,18 +540,18 @@ cell word(VM *vm, char *name, char *fun, int len, char flag) {
         vm->mem[vm->hp + i] = toupper(name[i]);
     vm->hp += strlen(name);
 
-	addr = vm->hp;
+    addr = vm->hp;
     for(i = 0; i < len; ++i)
         vm->mem[vm->hp + i] = fun[i];
     vm->hp += len;
-    
+
     return addr;
 }
 
 cell cword(VM *vm, char *name, fun cfun, char flag) {
 
-	cell i;
-	cell addr;
+    cell i;
+    cell addr;
 
     *((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
     vm->lp = vm->hp;
@@ -473,7 +563,7 @@ cell cword(VM *vm, char *name, fun cfun, char flag) {
         vm->mem[vm->hp + i] = toupper(name[i]);
     vm->hp += strlen(name);
 
-	addr = vm->hp;
+    addr = vm->hp;
     *((cell *) &(vm->mem[vm->hp])) = CFUN;
     vm->hp += CELL_SIZE;
     *((fun *) &(vm->mem[vm->hp])) = cfun;
@@ -485,24 +575,24 @@ cell cword(VM *vm, char *name, fun cfun, char flag) {
 }
 
 void x(VM *vm) {
-	puts("Hello");
-	(void)vm;
+    puts("Hello");
+    (void)vm;
 }
 void words(VM *vm) {
-	cell addr;
-	cell arr[] = {
+    cell addr;
+    cell arr[] = {
         LIT, 4, LIT, 5, ADD, RET,
     };
 
     addr = cword(vm, "hello", x, MASK_VIS | MASK_IMM);
-	*((cell *) &(vm->mem[0])) = addr;
-	addr = word(vm, "test", (char *) arr, sizeof(arr), MASK_VIS);
-	*((cell *) &(vm->mem[0])) = addr;
+    *((cell *) &(vm->mem[0])) = addr;
+    addr = word(vm, "test", (char *) arr, sizeof(arr), MASK_VIS);
+    *((cell *) &(vm->mem[0])) = addr;
 }
 
 
 void save(VM *vm, char *file) {
-	int i;
+    int i;
     FILE *fp = fopen(file, "wb");
     for(i = 0; i < vm->hp; ++i)
         fputc(vm->mem[i], fp);
@@ -518,7 +608,7 @@ void restore(VM *vm, char *file) {
 }
 
 void dump(VM *vm, char *file) {
-	int i;
+    int i;
     FILE *fp = fopen(file, "w");
     fprintf(fp, "{ ");
     for(i = 0; i < vm->hp; ++i) {
@@ -538,7 +628,7 @@ void debug_state(VM *vm) {
 }
 
 void debug_stack(VM *vm) {
-	int i;
+    int i;
     printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
     for(i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
         if(vm->psp > i)
@@ -554,29 +644,29 @@ void debug_stack(VM *vm) {
 }
 
 void debug_mem(VM *vm) {
-	int i;
+    int i;
     for(i = 0; i < vm->hp; ++i)
         printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
 }
 
 void debug_words(VM *vm) {
-	cell addr;
-	for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-		printf("0x%04x : %.*s : %s%s\n", addr,
-		vm->mem[addr+CELL_SIZE] & WORD_LEN, &(vm->mem[addr+CELL_SIZE+1]),
-		vm->mem[addr+CELL_SIZE] & MASK_VIS ? "VIS ": "",
-		vm->mem[addr+CELL_SIZE] & MASK_IMM ? "IMM ": "");
-	}
+    cell addr;
+    for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
+        printf("0x%04x : %.*s : %s%s\n", addr,
+               vm->mem[addr+CELL_SIZE] & WORD_LEN, &(vm->mem[addr+CELL_SIZE+1]),
+               vm->mem[addr+CELL_SIZE] & MASK_VIS ? "VIS ": "",
+               vm->mem[addr+CELL_SIZE] & MASK_IMM ? "IMM ": "");
+    }
 }
 
 void debug(VM *vm) {
-	printf("Debug Info\n");
-	debug_state(vm);
-	debug_stack(vm);
-	puts("");
-	debug_words(vm);
-	puts("");
-	puts("");
+    printf("Debug Info\n");
+    debug_state(vm);
+    debug_stack(vm);
+    puts("");
+    debug_words(vm);
+    puts("");
+    puts("");
 }
 
 
