@@ -3,11 +3,12 @@
 
 
 
+
 int main(/*int argc, char *argv[]*/) {
 
     VM vm;
     init(&vm);
-    //words(&vm);
+    /*words(&vm);*/
     debug(&vm);
 
 	*((cell *) &(vm.mem[vm.hp])) = 120;
@@ -24,5 +25,8 @@ int main(/*int argc, char *argv[]*/) {
     save(&vm, "dump.mem");
 printf("%10i\n", ADD);
 printf("%10i\n", SUB);
+
+
+
     return 0;
 }

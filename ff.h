@@ -21,10 +21,12 @@ typedef enum state state;
 typedef void (*fun)(VM *vm);
 
 typedef signed short cell;
-//typedef unsigned short ptr;
 typedef unsigned char byte;
 
 typedef enum op op;
+
+#define CELL_SIZE ((cell) sizeof(cell))
+#define CFUN_SIZE ((cell) sizeof(fun))
 
 
 enum power {
@@ -40,8 +42,8 @@ enum state {
 struct VM {
     power p;
     state s;
-    fun i;
-    fun o;
+    FILE *i;
+    FILE *o;
 
     cell ps[0x100];
     byte psp;
@@ -81,11 +83,11 @@ enum op {
     LDP, STRP,
     LDR, STRR,
 
-    LDI, STRI,
     LDH, STRH,
     LDL, STRL,
 
-    CSZ, KEY, EMIT, CALL,
+    CSZ, CFUN,
+    KEY, EMIT, CALL,
 
     COL, SEMI, INTERP, DEB,
 };
@@ -97,7 +99,7 @@ void _nop(VM *vm) {
 void _lit(VM *vm) {
     cell val = *((cell *) &(vm->mem[vm->ip]));
     vm->ps[vm->psp++] = val;
-    vm->ip += sizeof(cell);
+    vm->ip += CELL_SIZE;
 }
 void _halt(VM *vm) {
     vm->p = OFF;
@@ -294,16 +296,6 @@ void _strr(VM *vm) {
     vm->rsp = val;
 }
 
-void _ldi(VM *vm) {
-    cell val = vm->ip;
-    vm->ps[vm->psp++] = val;
-}
-
-void _stri(VM *vm) {
-    cell val = vm->ps[--vm->psp];
-    vm->ip = val;
-}
-
 void _ldh(VM *vm) {
     cell val = vm->hp;
     vm->ps[vm->psp++] = val;
@@ -325,21 +317,26 @@ void _strl(VM *vm) {
 }
 
 void _key(VM *vm) {
-    int c = getchar();
+    int c = fgetc(vm->i);
     vm->ps[vm->psp++] = c;
 }
 
 void _emit(VM *vm) {
     int c = vm->ps[--vm->psp];
-    putchar(c);
+    fputc(c, vm->o);
 }
 
 void _csz(VM *vm) {
-    vm->ps[vm->psp++] = sizeof(cell);
+    vm->ps[vm->psp++] = CELL_SIZE;
 }
 
+void _cfun(VM *vm) {
+	fun cfun = *((fun *) &(vm->mem[vm->ip]));
+    vm->ip += CFUN_SIZE;
+    cfun(vm);
+}
 
-
+/*
 void _col(VM *vm) {
 
     char buf[32];
@@ -358,7 +355,7 @@ void _col(VM *vm) {
 
     *((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
     vm->lp = vm->hp;
-    vm->hp += sizeof(cell);
+    vm->hp += CELL_SIZE;
 
     byte i;
     for(i = 0; buf[i] != '\0'; ++i)
@@ -370,7 +367,7 @@ void _col(VM *vm) {
 
 void _semi(VM *vm) {
     vm->mem[vm->hp++] = RET;
-    vm->mem[vm->lp + sizeof(cell)] |= MASK_VIS;
+    vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
     vm->s = INTERPRET;
 }
 
@@ -392,9 +389,9 @@ void _interp(VM *vm) {
     byte flags;
 
     for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + sizeof(cell)];
+        flags = vm->mem[addr + CELL_SIZE];
         if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(buf, (char *) &(vm->mem[addr + sizeof(cell) + 1]), len) == 0)
+            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
                 break;
     }
 
@@ -410,7 +407,7 @@ void _interp(VM *vm) {
     if(vm->s == INTERPRET) {
         if(addr) {
             vm->rs[vm->rsp++] = vm->ip - 1;
-            vm->ip = addr + sizeof(cell) + 1 + len;
+            vm->ip = addr + CELL_SIZE + 1 + len;
         } else if(nflag) {
             vm->ps[vm->psp++] = num;
             vm->ip = vm->ip - 1;
@@ -422,18 +419,18 @@ void _interp(VM *vm) {
         if(addr) {
             if(flags & MASK_IMM) {
                 vm->rs[vm->rsp++] = vm->ip - 1;
-                vm->ip = addr + sizeof(cell) + 1 + len;
+                vm->ip = addr + CELL_SIZE + 1 + len;
             } else {
                 vm->mem[vm->hp++] = LIT;
-                *((cell *) &(vm->mem[vm->hp])) = addr + sizeof(cell) + 1 + len;
-                vm->hp += sizeof(cell);
+                *((cell *) &(vm->mem[vm->hp])) = addr + CELL_SIZE + 1 + len;
+                vm->hp += CELL_SIZE;
                 vm->mem[vm->hp++] = CALL;
                 vm->ip = vm->ip - 1;
             }
         } else if(nflag) {
             vm->mem[vm->hp++] = LIT;
             *((cell *) &(vm->mem[vm->hp])) = num;
-            vm->hp += sizeof(cell);
+            vm->hp += CELL_SIZE;
             vm->ip = vm->ip - 1;
         } else {
             vm->s = INTERPRET;
@@ -467,12 +464,12 @@ void _deb(VM *vm) {
     }
     printf("\n\n");
 }
-
+*/
 
 
 cell opcode(VM *vm) {
 	cell addr = *((cell *) &(vm->mem[vm->ip]));
-	vm->ip += sizeof(cell);
+	vm->ip += CELL_SIZE;
     return addr;
 }
 
@@ -515,21 +512,20 @@ void exec(VM *vm, cell addr) {
 		case STRP: _strp(vm); break;
 		case LDR: _ldr(vm); break;
 		case STRR: _strr(vm); break;
-		case LDI: _ldi(vm); break;
-		case STRI: _stri(vm); break;
 		case LDH: _ldh(vm); break;
 		case STRH: _strh(vm); break;
 		case LDL: _ldl(vm); break;
 		case STRL: _strl(vm); break;
 		case CSZ: _csz(vm); break;
-		case KEY: vm->i(vm); break;
-		case EMIT: vm->o(vm); break;
-
+		case CFUN: _cfun(vm); break;
+		case KEY: _key(vm); break;
+		case EMIT: _emit(vm); break;
+/*
 		case COL: _col(vm); break;
 		case SEMI: _semi(vm); break;
 		case INTERP: _interp(vm); break;
 		case DEB: _deb(vm); break;
-
+*/
     	default:
     		vm->rs[vm->rsp++] = vm->ip;
     		vm->ip = addr;
@@ -547,20 +543,23 @@ void run(VM *vm) {
 
 
 void init(VM *vm) {
+	
+	int i;
+
     vm->p = ON;
     vm->s = INTERPRET;
-    vm->i = _key;
-    vm->o = _emit;
+    vm->i = stdin;
+    vm->o = stdout;
 
-    for(int i = 0; i < 0x100; ++i)
+    for(i = 0; i < 0x100; ++i)
         vm->ps[i] = 0;
     vm->psp = 0;
 
-    for(int i = 0; i < 0x100; ++i)
+    for(i = 0; i < 0x100; ++i)
         vm->rs[i] = 0;
     vm->rsp = 0;
 
-    for(int i = 0; i < MEM_SIZE; ++i)
+    for(i = 0; i < MEM_SIZE; ++i)
         vm->mem[i] = 0;
 
     vm->ip = 0;
@@ -574,7 +573,7 @@ void word(VM *vm, char *name, char *fun, int len, char flag) {
 
     *((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
     vm->lp = vm->hp;
-    vm->hp += sizeof(cell);
+    vm->hp += CELL_SIZE;
 
     vm->mem[vm->hp++] = strlen(name) | flag;
 
@@ -591,9 +590,9 @@ void word(VM *vm, char *name, char *fun, int len, char flag) {
     
 
 	*((cell *) &(vm->mem[vm->hp])) = INTERP;
-	vm->hp += sizeof(cell);
+	vm->hp += CELL_SIZE;
     *((cell *) &(vm->mem[vm->hp])) = HALT;
-    vm->hp += sizeof(cell);
+    vm->hp += CELL_SIZE;
 
 }
 
@@ -618,12 +617,13 @@ void words(VM *vm) {
 */
 
 void debug(VM *vm) {
+	int i;
     printf("Debug Info\n");
     printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
     printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
 
     printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
-    for(int i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
+    for(i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
         if(vm->psp > i)
             printf("%10i\t", vm->ps[i]);
         else
@@ -635,7 +635,7 @@ void debug(VM *vm) {
     }
 
     printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
-    for(int i = 0; i < vm->hp; ++i)
+    for(i = 0; i < vm->hp; ++i)
         printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
 
     printf("\n\n");
@@ -643,8 +643,9 @@ void debug(VM *vm) {
 
 
 void save(VM *vm, char *file) {
+	int i;
     FILE *fp = fopen(file, "wb");
-    for(int i = 0; i < vm->hp; ++i)
+    for(i = 0; i < vm->hp; ++i)
         putc(vm->mem[i], fp);
     fclose(fp);
 }
@@ -658,9 +659,10 @@ void restore(VM *vm, char *file) {
 }
 
 void dump(VM *vm, char *file) {
+	int i;
     FILE *fp = fopen(file, "w");
     fprintf(fp, "{ ");
-    for(int i = 0; i < vm->hp; ++i) {
+    for(i = 0; i < vm->hp; ++i) {
         if(i % 8 == 0)
             fprintf(fp, "\n");
         fprintf(fp, "%#05x, ", vm->mem[i]);
