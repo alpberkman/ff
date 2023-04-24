@@ -91,6 +91,55 @@ enum op {
 };
 
 
+void debug_state(VM *vm) {
+    printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
+    printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
+    printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
+}
+
+void debug_stack(VM *vm) {
+    int i;
+    printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
+    for(i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
+        if(vm->psp > i)
+            printf("%10i\t", vm->ps[i]);
+        else
+            printf("          \t");
+
+        if(vm->rsp > i)
+            printf("%10i\n", vm->rs[i]);
+        else
+            printf("          \n");
+    }
+}
+
+void debug_mem(VM *vm) {
+    int i;
+    for(i = 0; i < vm->hp; ++i)
+        printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
+}
+
+void debug_words(VM *vm) {
+    cell addr;
+    for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
+        printf("0x%04x : %.*s : %s%s\n", addr,
+               vm->mem[addr+CELL_SIZE] & WORD_LEN, &(vm->mem[addr+CELL_SIZE+1]),
+               vm->mem[addr+CELL_SIZE] & MASK_VIS ? "VIS ": "",
+               vm->mem[addr+CELL_SIZE] & MASK_IMM ? "IMM ": "");
+    }
+}
+
+void debug(VM *vm) {
+    printf("\nDebug Info\n");
+    debug_state(vm);
+    debug_stack(vm);
+    puts("");
+    debug_words(vm);
+    puts("");
+    puts("");
+}
+
+
 void _nop(VM *vm) {
     (void) vm;
 }
@@ -523,6 +572,15 @@ void init(VM *vm) {
     vm->hp += CELL_SIZE;
     *((cell *) &(vm->mem[vm->hp])) = HALT;
     vm->hp += CELL_SIZE;
+    
+   /*
+    *((cell *) &(vm->mem[vm->hp])) = HALT;
+    vm->hp += CELL_SIZE;
+    *((cell *) &(vm->mem[vm->hp])) = 123;
+    vm->hp += CELL_SIZE;
+    *((cell *) &(vm->mem[vm->hp])) = HALT;
+    vm->hp += CELL_SIZE;
+    */
 }
 
 cell word(VM *vm, char *name, char *fun, int len, char flag) {
@@ -574,19 +632,23 @@ cell cword(VM *vm, char *name, fun cfun, char flag) {
     return addr;
 }
 
-void x(VM *vm) {
-    puts("Hello");
-    (void)vm;
-}
 void words(VM *vm) {
-    cell addr;
+    cell addr = NOP;
     cell arr[] = {
         LIT, 4, LIT, 5, ADD, RET,
     };
+    
+    cell arr2[] = {
+        POP, DUP, CSZ, ADD, PUSH, LDC, RET,
+    };
+    
+    
+    word(vm, "LIT", (char *) arr2, sizeof(arr2), MASK_VIS);
+   
+    word(vm, "test", (char *) arr, sizeof(arr), MASK_VIS);
 
-    addr = cword(vm, "hello", x, MASK_VIS | MASK_IMM);
-    *((cell *) &(vm->mem[0])) = addr;
-    addr = word(vm, "test", (char *) arr, sizeof(arr), MASK_VIS);
+    cword(vm, "deb", debug, MASK_VIS | MASK_IMM);
+
     *((cell *) &(vm->mem[0])) = addr;
 }
 
@@ -621,52 +683,102 @@ void dump(VM *vm, char *file) {
 }
 
 
-void debug_state(VM *vm) {
-    printf("Power: %s\n", vm->p == OFF ? "OFF" : "ON");
-    printf("State: %s\n", vm->s == INTERPRET ? "INTERPRET" : "COMPILE");
-    printf("IP: %i  HP: %i  LP: %i\n", vm->ip, vm->hp, vm->lp);
-}
 
-void debug_stack(VM *vm) {
-    int i;
-    printf("PS: %6i\tRS: %6i\n", vm->psp, vm->rsp);
-    for(i = 0; i < (vm->psp > vm->rsp ? vm->psp : vm->rsp); ++i) {
-        if(vm->psp > i)
-            printf("%10i\t", vm->ps[i]);
-        else
-            printf("          \t");
 
-        if(vm->rsp > i)
-            printf("%10i\n", vm->rs[i]);
-        else
-            printf("          \n");
+#define streq(X, Y) (strcmp((X), (Y)) == 0)
+void interp(VM *vm) {
+	char buf[32];
+    int c;
+    
+    /*Remove white space*/
+    while(isspace(c = getchar()));
+
+	/*Get the string*/
+    byte len = 0;
+    do {
+        if(c == EOF)
+            return;
+        buf[len++] = toupper(c);
+    } while(len < 31 && !isspace(c = getchar()));
+    buf[len] = '\0';
+    
+    /*Echo*/
+    puts(buf);
+    
+    if(streq(buf, "DEBUG")) {
+    	debug(vm);
+    	return;
     }
-}
+    
+    if(streq(buf, ":")) {
+    	if(vm->s == COMPILE) {
+    		vm->s = INTERPRET;
+            vm->hp = vm->lp;
+            vm->lp = *((cell *) &(vm->mem[vm->lp]));
+            vm->ip = 0;
+            vm->psp = 0;
+            vm->rsp = 0;
+    		printf("ERROR: Compile mode with %s\n", buf);
+    	} else {
+    		int	i;
+    		
+    		 /*Remove white space*/
+			while(isspace(c = getchar()));
 
-void debug_mem(VM *vm) {
-    int i;
-    for(i = 0; i < vm->hp; ++i)
-        printf("0x%04x: %3i %c\n", i, vm->mem[i], isgraph(vm->mem[i]) ? vm->mem[i] : '_');
-}
+			/*Get the string*/
+			byte len = 0;
+			do {
+				if(c == EOF)
+				    return;
+				buf[len++] = toupper(c);
+			} while(len < 31 && !isspace(c = getchar()));
+			buf[len] = '\0';
+			
+			if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")) {
+				printf("ERROR: Compile mode name %s\n", buf);
+				return;
+			}
+    		
+    		*((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
+			vm->lp = vm->hp;
+			vm->hp += CELL_SIZE;
 
-void debug_words(VM *vm) {
-    cell addr;
-    for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        printf("0x%04x : %.*s : %s%s\n", addr,
-               vm->mem[addr+CELL_SIZE] & WORD_LEN, &(vm->mem[addr+CELL_SIZE+1]),
-               vm->mem[addr+CELL_SIZE] & MASK_VIS ? "VIS ": "",
-               vm->mem[addr+CELL_SIZE] & MASK_IMM ? "IMM ": "");
+			vm->mem[vm->hp++] = strlen(buf);
+
+			for(i = 0; i < (short) strlen(buf); ++i)
+				vm->mem[vm->hp + i] = buf[i];
+			vm->hp += strlen(buf);
+			
+			vm->s = COMPILE;
+    	}
+    	return;
     }
+    
+    if(streq(buf, ";")) {
+    	if(vm->s == INTERPRET) {
+    		vm->s = INTERPRET;
+            vm->ip = 0;
+            vm->psp = 0;
+            vm->rsp = 0;
+    		printf("ERROR: Interpret mode with %s\n", buf);
+    	} else {
+		    *((cell *) &(vm->mem[vm->hp])) = RET;
+		    vm->hp += CELL_SIZE;
+			vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
+			vm->s = INTERPRET;
+			vm->ip = 0;
+    	}
+    	return;
+    }
+    
+    
+    
 }
 
-void debug(VM *vm) {
-    printf("Debug Info\n");
-    debug_state(vm);
-    debug_stack(vm);
-    puts("");
-    debug_words(vm);
-    puts("");
-    puts("");
-}
+
+
+
+
+
 
 

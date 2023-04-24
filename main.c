@@ -12,7 +12,8 @@ int main(/*int argc, char *argv[]*/) {
     init(&vm);
     words(&vm);
     debug(&vm);
-
+    /*debug_mem(&vm);
+*/
 
     /*
     	*((cell *) &(vm.mem[vm.hp])) = 120;
@@ -28,7 +29,11 @@ int main(/*int argc, char *argv[]*/) {
         cycle(&vm);debug(&vm);
 
     */
-    run(&vm);
+    for(;;) {
+    	run(&vm);
+    	interp(&vm);
+    }
+    
     debug(&vm);
 
     dump(&vm, "dump.c");

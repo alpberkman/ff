@@ -162,3 +162,68 @@ void words(VM *vm) {
 }
 */
 
+#define streq(X, Y) (strcmp((X), (Y)) == 0)
+void interp(VM *vm) {
+	char buf[32];
+    int c;
+    
+    /*Remove white space*/
+    while(isspace(c = getchar()));
+
+	/*Get the string*/
+    byte len = 0;
+    do {
+        if(c == EOF)
+            return;
+        buf[len++] = toupper(c);
+    } while(len < 31 && !isspace(c = getchar()));
+    buf[len] = '\0';
+    
+    puts(buf);
+    
+    if(streq(buf, "DEBUG")) {
+    	debug(vm);
+    	return;
+    }
+    
+    if(streq(buf, ":")) {
+    	if(vm->s == COMPILE) {
+    		vm->s = INTERPRET;
+            vm->hp = vm->lp;
+            vm->lp = *((cell *) &(vm->mem[vm->lp]));
+            vm->ip = 0;
+            vm->psp = 0;
+            vm->rsp = 0;
+    		printf("Compile mode with %s\n", buf);
+    	} else {
+    		int	i;
+    		*((cell *) &(vm->mem[vm->hp])) = *((cell *) &(vm->lp));
+			vm->lp = vm->hp;
+			vm->hp += CELL_SIZE;
+
+			vm->mem[vm->hp++] = strlen(buf);
+
+			for(i = 0; i < (short) strlen(buf); ++i)
+				vm->mem[vm->hp + i] = buf[i];
+			vm->hp += strlen(buf);
+    	}
+    	return;
+    }
+    
+    if(streq(buf, ";")) {
+    	if(vm->s == INTERPRET) {
+    		vm->s = INTERPRET;
+            vm->ip = 0;
+            vm->psp = 0;
+            vm->rsp = 0;
+    		printf("Interpret mode with %s\n", buf);
+    	} else {
+		    *((cell *) &(vm->mem[vm->hp])) = RET;
+		    vm->hp += CELL_SIZE;
+			vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
+			vm->s = INTERPRET;
+    	}
+    	return;
+    }
+    
+}
