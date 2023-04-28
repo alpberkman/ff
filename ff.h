@@ -87,7 +87,7 @@ enum prim {
     LDL, STRL,
 
     CSZ, CFUN,
-    KEY, EMIT, CALL,
+    KEY, EMIT, /*CALL,*/
 };
 
 
@@ -634,9 +634,172 @@ cell cword(VM *vm, char *name, fun cfun, char flag) {
 
 void words(VM *vm) {
     cell addr = NOP;
-    cell arr[] = {
-        LIT, 4, LIT, 5, ADD, RET,
+    
+    cell arr_nop[] = {
+        RET,
     };
+    cell arr_lit[] = {
+        POP, DUP, CSZ, ADD, PUSH, LDC, RET,
+    };
+    cell arr_halt[] = {
+        HALT,
+    };
+    cell arr_dup[] = {
+        DUP, RET,
+    };
+    cell arr_drop[] = {
+        DROP, RET,
+    };
+    cell arr_swap[] = {
+        SWAP, RET,
+    };
+    cell arr_push[] = {
+        POP, SWAP, PUSH, PUSH, RET,
+    };
+    cell arr_pop[] = {
+        POP, POP, SWAP, PUSH, RET,
+    };
+    cell arr_pickp[] = {
+        PICKP, RET,
+    };
+    cell arr_pickr[] = {
+        LIT, 1, ADD, PICKR, RET,
+    };
+    cell arr_jmp[] = {
+        JMP,
+    };
+    cell arr_jz[] = {
+        JZ,
+    };
+    cell arr_ret[] = {
+        POP, DROP, RET,
+    };
+    cell arr_eq[] = {
+        EQ, RET,
+    };
+    cell arr_neq[] = {
+        NEQ, RET,
+    };
+    cell arr_lt[] = {
+        LT, RET,
+    };
+    cell arr_gt[] = {
+        GT, RET,
+    };
+    cell arr_and[] = {
+        AND, RET,
+    };
+    cell arr_or[] = {
+        OR, RET,
+    };
+    cell arr_xor[] = {
+        XOR, RET,
+    };
+    cell arr_shr[] = {
+        SHR, RET,
+    };
+    cell arr_shl[] = {
+        SHL, RET,
+    };
+    cell arr_add[] = {
+        ADD, RET,
+    };
+    cell arr_sub[] = {
+        SUB, RET,
+    };
+    cell arr_mul[] = {
+        MUL, RET,
+    };
+    cell arr_div[] = {
+        DIV, RET,
+    };
+    cell arr_mod[] = {
+        MOD, RET,
+    };
+    cell arr_ldc[] = {
+        LDC, RET,
+    };
+    cell arr_strc[] = {
+        STRC, RET,
+    };
+    cell arr_ldb[] = {
+        LDB, RET,
+    };
+    cell arr_strb[] = {
+        STRB, RET,
+    };
+    cell arr_lds[] = {
+        LDS, RET,
+    };
+    cell arr_strs[] = {
+        STRS, RET,
+    };
+    cell arr_ldp[] = {
+        LDP, RET,
+    };
+    cell arr_strp[] = {
+        STRP, RET,
+    };
+    cell arr_ldr[] = {
+        LDR, RET,
+    };
+    cell arr_strr[] = {
+        STRR, RET,
+    };
+    cell arr_ldh[] = {
+        LDH, RET,
+    };
+    cell arr_strh[] = {
+        STRH, RET,
+    };
+    cell arr_ldl[] = {
+        LDL, RET,
+    };
+    cell arr_strl[] = {
+        STRL, RET,
+    };
+    cell arr_csz[] = {
+        CSZ, RET,
+    };
+    cell arr_cfun[] = {
+        CFUN, RET,
+    };
+    cell arr_key[] = {
+        KEY, RET,
+    };
+    cell arr_emit[] = {
+        EMIT, RET,
+    };
+
+
+    DROP, SWAP,
+    PUSH, POP,
+    PICKP, PICKR,
+
+    JMP, JZ, RET,
+
+    EQ, NEQ, LT, GT,
+
+    AND, OR, XOR,
+    SHR, SHL,
+
+    ADD, SUB, MUL,
+    DIV, MOD,
+
+    LDC, STRC,
+    LDB, STRB,
+
+    LDS, STRS,
+
+    LDP, STRP,
+    LDR, STRR,
+
+    LDH, STRH,
+    LDL, STRL,
+
+    CSZ, CFUN,
+    KEY, EMIT, CALL,
+    
     
     cell arr2[] = {
         POP, DUP, CSZ, ADD, PUSH, LDC, RET,
@@ -766,10 +929,10 @@ void interp(VM *vm) {
             vm->rsp = 0;
     		printf("ERROR: Interpret mode with %s\n", buf);
     	} else {
+            vm->s = INTERPRET;
 		    *((cell *) &(vm->mem[vm->hp])) = RET;
 		    vm->hp += CELL_SIZE;
 			vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
-			vm->s = INTERPRET;
 			vm->ip = 0; //WARN
     	}
     	return;

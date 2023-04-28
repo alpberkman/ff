@@ -90,6 +90,7 @@ enum op {
 
 
 void _nop(VM *vm) {
+	(void)vm;
 }
 
 void _lit(VM *vm) {
