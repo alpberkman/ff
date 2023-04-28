@@ -26,7 +26,7 @@ typedef void (*fun)(VM *vm);
 typedef signed short cell;
 typedef unsigned char byte;
 
-typedef enum op op;
+typedef enum prim prim;
 
 
 enum power {
@@ -57,7 +57,7 @@ struct VM {
     cell lp;
 };
 
-enum op {
+enum prim {
     NOP = ((cell) MEM_SIZE),
     LIT, HALT,
 
@@ -385,14 +385,14 @@ void _cfun(VM *vm) {
 }
 
 
-cell opcode(VM *vm) {
-    cell addr = *((cell *) &(vm->mem[vm->ip]));
+cell fetch(VM *vm) {
+    cell opcode = *((cell *) &(vm->mem[vm->ip]));
     vm->ip += CELL_SIZE;
-    return addr;
+    return opcode;
 }
 
-void exec(VM *vm, cell addr) {
-    switch(addr) {
+void exec(VM *vm, cell opcode) {
+    switch(opcode) {
     case NOP:
         _nop(vm);
         break;
@@ -530,12 +530,12 @@ void exec(VM *vm, cell addr) {
         break;
     default:
         vm->rs[vm->rsp++] = vm->ip;
-        vm->ip = addr;
+        vm->ip = opcode;
     }
 }
 
 void cycle(VM *vm) {
-    exec(vm, opcode(vm));
+    exec(vm, fetch(vm));
 }
 
 void run(VM *vm) {
@@ -594,7 +594,7 @@ cell word(VM *vm, char *name, char *fun, int len, char flag) {
 
     vm->mem[vm->hp++] = strlen(name) | flag;
 
-    for(i = 0; i < (short) strlen(name); ++i)
+    for(i = 0; i < (cell) strlen(name); ++i)
         vm->mem[vm->hp + i] = toupper(name[i]);
     vm->hp += strlen(name);
 
@@ -617,7 +617,7 @@ cell cword(VM *vm, char *name, fun cfun, char flag) {
 
     vm->mem[vm->hp++] = strlen(name) | flag;
 
-    for(i = 0; i < (short) strlen(name); ++i)
+    for(i = 0; i < (cell) strlen(name); ++i)
         vm->mem[vm->hp + i] = toupper(name[i]);
     vm->hp += strlen(name);
 
@@ -735,6 +735,10 @@ void interp(VM *vm) {
 			buf[len] = '\0';
 			
 			if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")) {
+				vm->s = INTERPRET;
+		        vm->ip = 0;
+		        vm->psp = 0;
+		        vm->rsp = 0;
 				printf("ERROR: Compile mode name %s\n", buf);
 				return;
 			}
@@ -745,7 +749,7 @@ void interp(VM *vm) {
 
 			vm->mem[vm->hp++] = strlen(buf);
 
-			for(i = 0; i < (short) strlen(buf); ++i)
+			for(i = 0; i < (int) strlen(buf); ++i)
 				vm->mem[vm->hp + i] = buf[i];
 			vm->hp += strlen(buf);
 			
@@ -766,7 +770,7 @@ void interp(VM *vm) {
 		    vm->hp += CELL_SIZE;
 			vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
 			vm->s = INTERPRET;
-			vm->ip = 0;
+			vm->ip = 0; //WARN
     	}
     	return;
     }
