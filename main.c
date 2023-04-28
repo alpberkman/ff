@@ -13,7 +13,7 @@ int main(/*int argc, char *argv[]*/) {
     words(&vm);
     debug(&vm);
     /*debug_mem(&vm);
-*/
+    */
 
     /*
     	*((cell *) &(vm.mem[vm.hp])) = 120;
@@ -30,11 +30,15 @@ int main(/*int argc, char *argv[]*/) {
 
     */
     for(;;) {
-    	run(&vm);
-    	interp(&vm);
+        run(&vm);
+        interp(&vm);
+/*
+        debug_state(&vm);
+        debug_stack(&vm);
+*/
     }
-    
     debug(&vm);
+
 
     dump(&vm, "dump.c");
     save(&vm, "dump.mem");
