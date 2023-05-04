@@ -116,9 +116,7 @@ void words(VM *vm) {
         POP, DROP, JMP,
     };
     cell arr_jz[] = {
-        SWAP, PUSH, CSZ, LIT, 7, MUL, LDI, ADD, SWAP, JZ,
-        POP, DROP, POP, JMP,
-        POP, POP, DROP, JMP,
+        JZ, RET,
         /*Wrong*/
     };
     cell arr_ret[] = {
@@ -196,6 +194,12 @@ void words(VM *vm) {
     cell arr_strr[] = {
         STRR, RET,
     };
+    cell arr_ldi[] = {
+        LDI, RET,
+    };
+    cell arr_stri[] = {
+        STRI, RET,
+    };
     cell arr_ldh[] = {
         LDH, RET,
     };
@@ -223,46 +227,48 @@ void words(VM *vm) {
 
     word(vm, "NOP", (char *) arr_nop, sizeof(arr_nop), MASK_VIS);
     word(vm, "LIT", (char *) arr_lit, sizeof(arr_lit), MASK_VIS);
-    word(vm, "HALT", (char *) arr_halt, sizeof(arr_halt), MASK_VIS);
+    word(vm, "BYE", (char *) arr_halt, sizeof(arr_halt), MASK_VIS);
     word(vm, "DUP", (char *) arr_dup, sizeof(arr_dup), MASK_VIS);
     word(vm, "DROP", (char *) arr_drop, sizeof(arr_drop), MASK_VIS);
     word(vm, "SWAP", (char *) arr_swap, sizeof(arr_swap), MASK_VIS);
-    word(vm, "PUSH", (char *) arr_push, sizeof(arr_push), MASK_VIS);
-    word(vm, "POP", (char *) arr_pop, sizeof(arr_pop), MASK_VIS);
-    word(vm, "PICKP", (char *) arr_pickp, sizeof(arr_pickp), MASK_VIS);
-    word(vm, "PICKR", (char *) arr_pickr, sizeof(arr_pickr), MASK_VIS);
+    word(vm, ">R", (char *) arr_push, sizeof(arr_push), MASK_VIS);
+    word(vm, "R>", (char *) arr_pop, sizeof(arr_pop), MASK_VIS);
+    word(vm, "PICK", (char *) arr_pickp, sizeof(arr_pickp), MASK_VIS);
+    word(vm, "RICK", (char *) arr_pickr, sizeof(arr_pickr), MASK_VIS);
     word(vm, "JMP", (char *) arr_jmp, sizeof(arr_jmp), MASK_VIS);
     word(vm, "JZ", (char *) arr_jz, sizeof(arr_jz), MASK_VIS);
-    word(vm, "RET", (char *) arr_ret, sizeof(arr_ret), MASK_VIS);
-    word(vm, "EQ", (char *) arr_eq, sizeof(arr_eq), MASK_VIS);
-    word(vm, "NEQ", (char *) arr_neq, sizeof(arr_neq), MASK_VIS);
-    word(vm, "LT", (char *) arr_lt, sizeof(arr_lt), MASK_VIS);
-    word(vm, "GT", (char *) arr_gt, sizeof(arr_gt), MASK_VIS);
+    word(vm, "EXIT", (char *) arr_ret, sizeof(arr_ret), MASK_VIS);
+    word(vm, "=", (char *) arr_eq, sizeof(arr_eq), MASK_VIS);
+    word(vm, "<>", (char *) arr_neq, sizeof(arr_neq), MASK_VIS);
+    word(vm, "<", (char *) arr_lt, sizeof(arr_lt), MASK_VIS);
+    word(vm, ">", (char *) arr_gt, sizeof(arr_gt), MASK_VIS);
     word(vm, "AND", (char *) arr_and, sizeof(arr_and), MASK_VIS);
     word(vm, "OR", (char *) arr_or, sizeof(arr_or), MASK_VIS);
     word(vm, "XOR", (char *) arr_xor, sizeof(arr_xor), MASK_VIS);
-    word(vm, "SHR", (char *) arr_shr, sizeof(arr_shr), MASK_VIS);
-    word(vm, "SHL", (char *) arr_shl, sizeof(arr_shl), MASK_VIS);
-    word(vm, "ADD", (char *) arr_add, sizeof(arr_add), MASK_VIS);
-    word(vm, "SUB", (char *) arr_sub, sizeof(arr_sub), MASK_VIS);
-    word(vm, "MUL", (char *) arr_mul, sizeof(arr_mul), MASK_VIS);
-    word(vm, "DIV", (char *) arr_div, sizeof(arr_div), MASK_VIS);
+    word(vm, "RSHIFT", (char *) arr_shr, sizeof(arr_shr), MASK_VIS);
+    word(vm, "LSHIFT", (char *) arr_shl, sizeof(arr_shl), MASK_VIS);
+    word(vm, "+", (char *) arr_add, sizeof(arr_add), MASK_VIS);
+    word(vm, "-", (char *) arr_sub, sizeof(arr_sub), MASK_VIS);
+    word(vm, "*", (char *) arr_mul, sizeof(arr_mul), MASK_VIS);
+    word(vm, "/", (char *) arr_div, sizeof(arr_div), MASK_VIS);
     word(vm, "MOD", (char *) arr_mod, sizeof(arr_mod), MASK_VIS);
-    word(vm, "LDC", (char *) arr_ldc, sizeof(arr_ldc), MASK_VIS);
-    word(vm, "STRC", (char *) arr_strc, sizeof(arr_strc), MASK_VIS);
-    word(vm, "LDB", (char *) arr_ldb, sizeof(arr_ldb), MASK_VIS);
-    word(vm, "STRB", (char *) arr_strb, sizeof(arr_strb), MASK_VIS);
-    word(vm, "LDS", (char *) arr_lds, sizeof(arr_lds), MASK_VIS);
-    word(vm, "STRS", (char *) arr_strs, sizeof(arr_strs), MASK_VIS);
-    word(vm, "LDP", (char *) arr_ldp, sizeof(arr_ldp), MASK_VIS);
-    word(vm, "STRP", (char *) arr_strp, sizeof(arr_strp), MASK_VIS);
-    word(vm, "LDR", (char *) arr_ldr, sizeof(arr_ldr), MASK_VIS);
-    word(vm, "STRR", (char *) arr_strr, sizeof(arr_strr), MASK_VIS);
-    word(vm, "LDH", (char *) arr_ldh, sizeof(arr_ldh), MASK_VIS);
-    word(vm, "STRH", (char *) arr_strh, sizeof(arr_strh), MASK_VIS);
-    word(vm, "LDL", (char *) arr_ldl, sizeof(arr_ldl), MASK_VIS);
-    word(vm, "STRL", (char *) arr_strl, sizeof(arr_strl), MASK_VIS);
-    word(vm, "CSZ", (char *) arr_csz, sizeof(arr_csz), MASK_VIS);
+    word(vm, "@", (char *) arr_ldc, sizeof(arr_ldc), MASK_VIS);
+    word(vm, "!", (char *) arr_strc, sizeof(arr_strc), MASK_VIS);
+    word(vm, "C@", (char *) arr_ldb, sizeof(arr_ldb), MASK_VIS);
+    word(vm, "C!", (char *) arr_strb, sizeof(arr_strb), MASK_VIS);
+    word(vm, "STATE", (char *) arr_lds, sizeof(arr_lds), MASK_VIS);
+    word(vm, "STATE!", (char *) arr_strs, sizeof(arr_strs), MASK_VIS);
+    word(vm, "PSP", (char *) arr_ldp, sizeof(arr_ldp), MASK_VIS);
+    word(vm, "PSP!", (char *) arr_strp, sizeof(arr_strp), MASK_VIS);
+    word(vm, "RSP", (char *) arr_ldr, sizeof(arr_ldr), MASK_VIS);
+    word(vm, "RSP!", (char *) arr_strr, sizeof(arr_strr), MASK_VIS);
+    word(vm, "IP", (char *) arr_ldi, sizeof(arr_ldi), MASK_VIS);
+    word(vm, "IP!", (char *) arr_stri, sizeof(arr_stri), MASK_VIS);
+    word(vm, "HERE", (char *) arr_ldh, sizeof(arr_ldh), MASK_VIS);
+    word(vm, "HERE!", (char *) arr_strh, sizeof(arr_strh), MASK_VIS);
+    word(vm, "LAST", (char *) arr_ldl, sizeof(arr_ldl), MASK_VIS);
+    word(vm, "LAST!", (char *) arr_strl, sizeof(arr_strl), MASK_VIS);
+    word(vm, "CELL", (char *) arr_csz, sizeof(arr_csz), MASK_VIS);
     word(vm, "CFUN", (char *) arr_cfun, sizeof(arr_cfun), MASK_VIS);
     word(vm, "KEY", (char *) arr_key, sizeof(arr_key), MASK_VIS);
     word(vm, "EMIT", (char *) arr_emit, sizeof(arr_emit), MASK_VIS);
@@ -274,6 +280,7 @@ void words(VM *vm) {
     cword(vm, "deb_mem", debug_mem, MASK_VIS | MASK_IMM);
     cword(vm, "deb_word", debug_word, MASK_VIS | MASK_IMM);
     cword(vm, "dw", debug_word, MASK_VIS | MASK_IMM);
+    cword(vm, "debs", debug_stack2, MASK_VIS );
 
 
     *((cell *) &(vm->mem[0])) = addr;

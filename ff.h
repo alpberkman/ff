@@ -30,13 +30,13 @@ typedef enum prim prim;
 
 
 enum power {
-    OFF,
-    ON,
+    OFF = FALSE,
+    ON = TRUE,
 };
 
 enum state {
-    INTERPRET,
-    COMPILE,
+    INTERPRET = FALSE,
+    COMPILE = TRUE,
 };
 
 struct VM {

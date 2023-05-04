@@ -6,145 +6,145 @@
 void print_opcode(VM *vm, cell opcode) {
     switch(opcode) {
     case NOP:
-        printf("NOP ");
+        printf("PRIM-NOP ");
         break;
     case LIT:
-        printf("LIT ");
+        printf("PRIM-LIT ");
         break;
     case HALT:
-        printf("HALT ");
+        printf("PRIM-HALT ");
         break;
     case DUP:
-        printf("DUP ");
+        printf("PRIM-DUP ");
         break;
     case DROP:
-        printf("DROP ");
+        printf("PRIM-DROP ");
         break;
     case SWAP:
-        printf("SWAP ");
+        printf("PRIM-SWAP ");
         break;
     case PUSH:
-        printf("PUSH ");
+        printf("PRIM-PUSH ");
         break;
     case POP:
-        printf("POP ");
+        printf("PRIM-POP ");
         break;
     case PICKP:
-        printf("PICKP ");
+        printf("PRIM-PICKP ");
         break;
     case PICKR:
-        printf("PICKR ");
+        printf("PRIM-PICKR ");
         break;
     case JMP:
-        printf("JMP ");
+        printf("PRIM-JMP ");
         break;
     case JZ:
-        printf("JZ ");
+        printf("PRIM-JZ ");
         break;
     case RET:
-        printf("RET ");
+        printf("PRIM-RET ");
         break;
     case EQ:
-        printf("EQ ");
+        printf("PRIM-EQ ");
         break;
     case NEQ:
-        printf("NEQ ");
+        printf("PRIM-NEQ ");
         break;
     case LT:
-        printf("LT ");
+        printf("PRIM-LT ");
         break;
     case GT:
-        printf("GT ");
+        printf("PRIM-GT ");
         break;
     case AND:
-        printf("AND ");
+        printf("PRIM-AND ");
         break;
     case OR:
-        printf("OR ");
+        printf("PRIM-OR ");
         break;
     case XOR:
-        printf("XOR ");
+        printf("PRIM-XOR ");
         break;
     case SHR:
-        printf("SHR ");
+        printf("PRIM-SHR ");
         break;
     case SHL:
-        printf("SHL ");
+        printf("PRIM-SHL ");
         break;
     case ADD:
-        printf("ADD ");
+        printf("PRIM-ADD ");
         break;
     case SUB:
-        printf("SUB ");
+        printf("PRIM-SUB ");
         break;
     case MUL:
-        printf("MUL ");
+        printf("PRIM-MUL ");
         break;
     case DIV:
-        printf("DIV ");
+        printf("PRIM-DIV ");
         break;
     case MOD:
-        printf("MOD ");
+        printf("PRIM-MOD ");
         break;
     case LDC:
-        printf("LDC ");
+        printf("PRIM-LDC ");
         break;
     case STRC:
-        printf("STRC ");
+        printf("PRIM-STRC ");
         break;
     case LDB:
-        printf("LDB ");
+        printf("PRIM-LDB ");
         break;
     case STRB:
-        printf("STRB ");
+        printf("PRIM-STRB ");
         break;
     case LDS:
-        printf("LDS ");
+        printf("PRIM-LDS ");
         break;
     case STRS:
-        printf("STRS ");
+        printf("PRIM-STRS ");
         break;
     case LDP:
-        printf("LDP ");
+        printf("PRIM-LDP ");
         break;
     case STRP:
-        printf("STRP ");
+        printf("PRIM-STRP ");
         break;
     case LDR:
-        printf("LDR ");
+        printf("PRIM-LDR ");
         break;
     case STRR:
-        printf("STRR ");
+        printf("PRIM-STRR ");
         break;
     case LDI:
-        printf("LDI ");
+        printf("PRIM-LDI ");
         break;
     case STRI:
-        printf("STRI ");
+        printf("PRIM-STRI ");
         break;
     case LDH:
-        printf("LDH ");
+        printf("PRIM-LDH ");
         break;
     case STRH:
-        printf("STRH ");
+        printf("PRIM-STRH ");
         break;
     case LDL:
-        printf("LDL ");
+        printf("PRIM-LDL ");
         break;
     case STRL:
-        printf("STRL ");
+        printf("PRIM-STRL ");
         break;
     case CSZ:
-        printf("CSZ ");
+        printf("PRIM-CSZ ");
         break;
     case CFUN:
-        printf("CFUN ");
+        printf("PRIM-CFUN ");
         break;
     case KEY:
-        printf("KEY ");
+        printf("PRIM-KEY ");
         break;
     case EMIT:
-        printf("EMIT ");
+        printf("PRIM-EMIT ");
         break;
     default: {
         cell addr;
@@ -168,7 +168,7 @@ void print_word(VM *vm, cell addr, cell end) {
 
         print_opcode(vm, *((cell *) &vm->mem[addr]));
 
-        if(*((cell *) &vm->mem[addr]) == LIT) {
+        if(*((cell *) &vm->mem[addr]) == (cell)LIT) {
             addr += CELL_SIZE;
             printf("%i ", *((cell *) &vm->mem[addr]));
         } else if(*((cell *) &vm->mem[addr]) == CFUN) {
@@ -204,6 +204,20 @@ void debug_stack(VM *vm) {
             printf("          \n");
     }
 }
+void debug_stack2(VM *vm) {
+    int i;
+
+    printf("PS %6i: ", vm->psp);
+    for(i = 0; i < vm->psp; ++i)
+        printf("%6i ", vm->ps[i]);
+    puts("");
+
+    printf("RS %6i: ", vm->rsp);
+    for(i = 0; i < vm->rsp; ++i)
+        printf("%6i ", vm->rs[i]);
+    puts("");
+    puts("");
+}
 void debug_mem(VM *vm) {
     int i;
     for(i = 0; i < vm->hp; ++i) {
@@ -216,6 +230,11 @@ void debug_words(VM *vm) {
     cell end;
     for(addr = vm->lp, end = vm->hp; addr != 0; end = addr, addr = *((cell *) &(vm->mem[addr])))
         print_word(vm,  addr, end);
+}
+void debug_words2(VM *vm) {
+    cell addr;
+    for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr])))
+        printf("%.*s ", vm->mem[addr+CELL_SIZE] & WORD_LEN, &(vm->mem[addr+CELL_SIZE+1]));
 }
 void debug_word(VM *vm) {
     char buf[32];

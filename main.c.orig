@@ -36,10 +36,10 @@ int main(/*int argc, char *argv[]*/) {
         run(&vm);
         /*debug_state(&vm);*/
         debug_stack2(&vm);
-        /*
-                debug_state(&vm);
-                debug_stack(&vm);
-        */
+/*
+        debug_state(&vm);
+        debug_stack(&vm);
+*/
     }
     debug(&vm);
 

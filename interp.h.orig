@@ -86,7 +86,7 @@ void interp(VM *vm) {
             printf("ERROR: Interpret mode with %s\n", buf);
         } else {
             vm->s = INTERPRET;
-            *((cell *) &(vm->mem[vm->hp])) = 0x97 + 7;/*RET; WONT WORK FOR 32 bit*/
+            *((cell *) &(vm->mem[vm->hp])) = 0xb8 + 6;/*RET; WONT WORK FOR 32 bit*/
             vm->hp += CELL_SIZE;
             vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
             vm->ip = 0; /*WARN*/
@@ -95,13 +95,14 @@ void interp(VM *vm) {
     }
 
     if(streq(buf, "\'")) {
-        if(vm->s == (cell)COMPILE) {
+        if(vm->s == INTERPRET) {
             vm->s = INTERPRET;
             vm->ip = 0;
             vm->psp = 0;
             vm->rsp = 0;
-            printf("ERROR: COMPILE mode with %s\n", buf);
+            printf("ERROR: Interpret mode with %s\n", buf);
         } else {
+            int	i;
             cell addr;
 
             /*Remove white space*/
@@ -126,18 +127,18 @@ void interp(VM *vm) {
             }
 
             for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-                flags = vm->mem[addr + CELL_SIZE];
-                if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-                    if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
-                        break;
-            }
+        flags = vm->mem[addr + CELL_SIZE];
+        if((flags & MASK_VIS) && len == (flags & WORD_LEN))
+            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
+                break;
+    }
 
-            if(addr == 0) {
-                printf("ERROR: INTERPRET mode ' name not found %s\n", buf);
+    if(addr == 0) {
+        printf("ERROR: Compile mode ' name not found %s\n", buf);
                 return;
-            }
+    }
 
-            vm->ps[vm->psp++] = addr + CELL_SIZE + 1 + len;
+            *((cell *) &(vm->mem[vm->hp])) = addr;
 
         }
         return;
