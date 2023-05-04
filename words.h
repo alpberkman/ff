@@ -116,8 +116,10 @@ void words(VM *vm) {
         POP, DROP, JMP,
     };
     cell arr_jz[] = {
-        JZ, RET,
-        /*Wrong*/
+        PUSH,
+        CSZ, LIT, 6, MUL, LDI, ADD, JZ,
+        POP, DROP, POP, JMP,
+        POP, POP, DROP, JMP,
     };
     cell arr_ret[] = {
         POP, DROP, RET,
@@ -195,7 +197,7 @@ void words(VM *vm) {
         STRR, RET,
     };
     cell arr_ldi[] = {
-        LDI, RET,
+        POP, DUP, PUSH, RET,
     };
     cell arr_stri[] = {
         STRI, RET,

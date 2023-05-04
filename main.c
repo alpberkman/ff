@@ -35,8 +35,8 @@ int main(/*int argc, char *argv[]*/) {
         interp(&vm);
         run(&vm);
         /*debug_state(&vm);*/
-        debug_stack2(&vm);
-        /*
+         /*debug_stack2(&vm);
+
                 debug_state(&vm);
                 debug_stack(&vm);
         */

@@ -23,15 +23,25 @@
 
 
 : , HERE ! HERE CELL+ HERE! ;
-: LITERAL POSTPONE LIT POSTPONE LIT , , ; IMMEDIATE
+: LITERAL [ ' LIT , ] [ ' LIT , ] , , ; IMMEDIATE
 
 
 : [SELF] R> @ JMP ;
-: SELF [ ' [SELF] ] LITERAL , LAST CELL+ DUP C@ LEN AND + 1 + , ; IMMEDIATE
+: SELF
+    [ ' [SELF] ] LITERAL ,
+    LAST CELL+ DUP C@ LEN AND + 1 + ,
+; IMMEDIATE
 
 
-: [IF] 5 CELLS IP + JZ R> CELL+ JMP R> @ JMP ;
-: IF [ ' [IF] ] LITERAL , HERE HERE CELL+ HERE! ; IMMEDIATE
+: [IF]
+    5 CELLS IP + JZ
+    R> CELL+ JMP
+    R> @ JMP
+;
+: IF
+    [ ' [IF] ] LITERAL ,
+    HERE HERE CELL+ HERE!
+; IMMEDIATE
 
 
 : [THEN] ;

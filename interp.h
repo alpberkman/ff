@@ -1,28 +1,34 @@
 
-
 #define streq(X, Y) (strcmp((X), (Y)) == 0)
-void interp(VM *vm) {
-    char buf[32];
+#define err(X, Y) fprintf(stderr, "ERROR: %s %s\n", (X), (Y))
+
+
+void scanword(char *buf, byte *len) {
     int c;
-    cell addr = 0;
-    cell num = 0;
-    byte flags = 0;
-    byte nflag = 0;
 
     /*Remove white space*/
     while(isspace(c = getchar()));
 
     /*Get the string*/
-    byte len = 0;
+    *len = 0;
     do {
         if(c == EOF)
             return;
-        buf[len++] = toupper(c);
-    } while(len < 31 && !isspace(c = getchar()));
-    buf[len] = '\0';
+        buf[(*len)++] = toupper(c);
+    } while(*len < 31 && !isspace(c = getchar()));
+    buf[*len] = '\0';
+}
 
-    /*Echo*/
-    /*puts(buf);*/
+
+void interp(VM *vm) {
+    char buf[32];
+    cell addr = 0;
+    cell num = 0;
+    byte flags = 0;
+    byte nflag = 0;
+    byte len;
+
+    scanword(buf, &len);
 
     if(streq(buf, "DEBUG")) {
         debug(vm);
@@ -37,28 +43,18 @@ void interp(VM *vm) {
             vm->ip = 0;
             vm->psp = 0;
             vm->rsp = 0;
-            printf("ERROR: Compile mode with %s\n", buf);
+            err(buf, "in COMPILE mode");
         } else {
             int	i;
 
-            /*Remove white space*/
-            while(isspace(c = getchar()));
+            scanword(buf, &len);
 
-            /*Get the string*/
-            byte len = 0;
-            do {
-                if(c == EOF)
-                    return;
-                buf[len++] = toupper(c);
-            } while(len < 31 && !isspace(c = getchar()));
-            buf[len] = '\0';
-
-            if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")||streq(buf, "\'")) {
+            if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")||streq(buf, "\'")||streq(buf, "POSTPONE")) {
                 vm->s = INTERPRET;
                 vm->ip = 0;
                 vm->psp = 0;
                 vm->rsp = 0;
-                printf("ERROR: Compile mode name %s\n", buf);
+                err(buf, "in COMPILE mode");
                 return;
             }
 
@@ -83,10 +79,10 @@ void interp(VM *vm) {
             vm->ip = 0;
             vm->psp = 0;
             vm->rsp = 0;
-            printf("ERROR: Interpret mode with %s\n", buf);
+            err(buf, "in INTERPRET mode");
         } else {
             vm->s = INTERPRET;
-            *((cell *) &(vm->mem[vm->hp])) = 0x97 + 7;/*RET; WONT WORK FOR 32 bit*/
+            *((cell *) &(vm->mem[vm->hp])) = 0xb3 + 7;/*RET; WONT WORK FOR 32 bit*/
             vm->hp += CELL_SIZE;
             vm->mem[vm->lp + CELL_SIZE] |= MASK_VIS;
             vm->ip = 0; /*WARN*/
@@ -100,23 +96,52 @@ void interp(VM *vm) {
             vm->ip = 0;
             vm->psp = 0;
             vm->rsp = 0;
-            printf("ERROR: COMPILE mode with %s\n", buf);
+            err(buf, "in COMPILE mode");
         } else {
             cell addr;
 
-            /*Remove white space*/
-            while(isspace(c = getchar()));
+            scanword(buf, &len);
 
-            /*Get the string*/
-            byte len = 0;
-            do {
-                if(c == EOF)
-                    return;
-                buf[len++] = toupper(c);
-            } while(len < 31 && !isspace(c = getchar()));
-            buf[len] = '\0';
 
-            if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")||streq(buf, "\'")) {
+            if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")||streq(buf, "\'")||streq(buf, "POSTPONE")) {
+                vm->s = INTERPRET;
+                vm->ip = 0;
+                vm->psp = 0;
+                vm->rsp = 0;
+                err(buf, "in COMPILE mode");
+                return;
+            }
+
+            for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
+                flags = vm->mem[addr + CELL_SIZE];
+                if((flags & MASK_VIS) && len == (flags & WORD_LEN))
+                    if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
+                        break;
+            }
+
+            if(addr == 0) {
+                err(buf, "not found in \'");
+                return;
+            }
+
+            vm->ps[vm->psp++] = addr + CELL_SIZE + 1 + len;
+
+        }
+        return;
+    }
+
+    if(streq(buf, "POSTPONE")) {
+        if(vm->s == (cell)INTERPRET) {
+            vm->s = INTERPRET;
+            vm->ip = 0;
+            printf("ERROR: INTERPRET mode with %s\n", buf);
+        } else {
+            cell addr;
+
+            scanword(buf, &len);
+
+
+            if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")||streq(buf, "\'")||streq(buf, "POSTPONE")) {
                 vm->s = INTERPRET;
                 vm->ip = 0;
                 vm->psp = 0;
@@ -133,11 +158,12 @@ void interp(VM *vm) {
             }
 
             if(addr == 0) {
-                printf("ERROR: INTERPRET mode ' name not found %s\n", buf);
+                printf("ERROR: COMPILE mode ' name not found %s\n", buf);
                 return;
             }
 
-            vm->ps[vm->psp++] = addr + CELL_SIZE + 1 + len;
+            *((cell *) &(vm->mem[vm->hp])) = addr + CELL_SIZE + 1 + len;
+            vm->hp += CELL_SIZE;
 
         }
         return;
@@ -198,4 +224,3 @@ void interp(VM *vm) {
         vm->rsp = 0;
     }
 }
-

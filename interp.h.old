@@ -20,24 +20,20 @@ void scanword(char *buf, byte *len) {
 }
 
 
-
-
-
-void interp(VM *vm) {
-    char buf[32];
-    cell addr = 0;
-    cell num = 0;
-    byte flags = 0;
-    byte nflag = 0;
-
-    scanword(buf, &len);
-
-    if(streq(buf, "DEBUG")) {
-        debug(vm);
-        return;
+cell find_word(VM *vm, char *buf) {
+    cell addr;
+    btye flags;
+    for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
+        flags = vm->mem[addr + CELL_SIZE];
+        if((flags & MASK_VIS) && len == (flags & WORD_LEN))
+            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
+                break;
     }
+    return addr;
+}
 
-    if(streq(buf, ":")) {
+
+void ccolon(VM *vm) {
     if(vm->s == COMPILE) {
         vm->s = INTERPRET;
         vm->hp = vm->lp;
@@ -71,7 +67,33 @@ void interp(VM *vm) {
         vm->hp += strlen(buf);
 
         vm->s = COMPILE;
-    }        return;
+    }
+}
+void semicolon(VM *vm) {}
+void tick(VM *vm) {}
+void bracket_tick(VM *vm) {}
+void postpone(VM *vm) {}
+void colon(VM *vm) {}
+
+
+void interp(VM *vm) {
+    char buf[32];
+    int c;
+    cell addr = 0;
+    cell num = 0;
+    byte flags = 0;
+    byte nflag = 0;
+
+    scanword(buf, &len);
+
+    if(streq(buf, "DEBUG")) {
+        debug(vm);
+        return;
+    }
+
+    if(streq(buf, ":")) {
+        ccolon(vm);
+        return;
     }
 
     if(streq(buf, ";")) {
@@ -113,12 +135,7 @@ void interp(VM *vm) {
                 return;
             }
 
-                for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
-        if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
-                break;
-    }
+            addr = find_word(vm, buf);
 
             if(addr == 0) {
                 err(buf, "not found in \'");
@@ -151,12 +168,7 @@ void interp(VM *vm) {
                 return;
             }
 
-                for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
-        if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
-                break;
-    }
+            addr = find_word(vm, buf);
 
             if(addr == 0) {
                 printf("ERROR: COMPILE mode ' name not found %s\n", buf);
@@ -170,12 +182,7 @@ void interp(VM *vm) {
         return;
     }
 
-        for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
-        if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
-                break;
-    }
+    addr = find_word(vm, buf);
 
     if(addr == 0) {
         nflag = strspn(buf, "1234567890-+") == len;
@@ -225,3 +232,4 @@ void interp(VM *vm) {
         vm->rsp = 0;
     }
 }
+

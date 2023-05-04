@@ -235,6 +235,7 @@ void debug_words2(VM *vm) {
     cell addr;
     for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr])))
         printf("%.*s ", vm->mem[addr+CELL_SIZE] & WORD_LEN, &(vm->mem[addr+CELL_SIZE+1]));
+    puts("");
 }
 void debug_word(VM *vm) {
     char buf[32];
