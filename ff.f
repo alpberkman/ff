@@ -27,7 +27,7 @@
 
 
 : [SELF] R> @ JMP ;
-: SELF [ ' [SELF] ] LITERAL , LAST CELL+ DUP C@ LEN AND + 1 + , ; IMMEDIATE
+: SELF ['] [SELF] , LAST CELL+ DUP C@ LEN AND + 1 + , ; IMMEDIATE
 
 
 : [IF] 5 CELLS IP + JZ R> CELL+ JMP R> @ JMP ;

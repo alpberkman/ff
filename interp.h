@@ -130,6 +130,50 @@ void interp(VM *vm) {
         return;
     }
 
+    if(streq(buf, "[\']")) {
+        if(vm->s == (cell)INTERPRET) {
+            vm->s = INTERPRET;
+            vm->ip = 0;
+            vm->psp = 0;
+            vm->rsp = 0;
+            err(buf, "in INTERPRET mode");
+        } else {
+            cell addr;
+
+            scanword(buf, &len);
+
+
+            if(streq(buf, ":")||streq(buf, ";")||streq(buf, "DEBUG")||streq(buf, "\'")||streq(buf, "POSTPONE")) {
+                vm->s = INTERPRET;
+                vm->ip = 0;
+                vm->psp = 0;
+                vm->rsp = 0;
+                err(buf, "in COMPILE mode");
+                return;
+            }
+
+            for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
+                flags = vm->mem[addr + CELL_SIZE];
+                if((flags & MASK_VIS) && len == (flags & WORD_LEN))
+                    if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
+                        break;
+            }
+
+            if(addr == 0) {
+                err(buf, "not found in \'");
+                return;
+            }
+
+            *((cell *) &(vm->mem[vm->hp])) = 0x0c + 6;
+            vm->hp += CELL_SIZE;
+            *((cell *) &(vm->mem[vm->hp])) = addr + CELL_SIZE + 1 + len;
+            vm->hp += CELL_SIZE;
+
+
+        }
+        return;
+    }
+
     if(streq(buf, "POSTPONE")) {
         if(vm->s == (cell)INTERPRET) {
             vm->s = INTERPRET;
