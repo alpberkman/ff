@@ -1,5 +1,11 @@
 
 
+
+: CELL+ CELL + ;
+: CELL- CELL - ;
+: CELLS CELL * ;
+
+
 : TRUE -1 ;
 : FALSE 0 ;
 
@@ -7,11 +13,6 @@
 : VIS 1 7 LSHIFT ;
 : IMM 1 6 LSHIFT ;
 : LEN 31 ;
-
-
-: CELL+ CELL + ;
-: CELL- CELL - ;
-: CELLS CELL * ;
 
 
 : IMMEDIATE LAST CELL+ DUP C@ IMM OR SWAP C! ;
@@ -76,7 +77,9 @@
 	DUP EMIT 10 <> IF SELF THEN
 ; IMMEDIATE
 
-
+:  a warn here is a \
+multiline warning from function a
+;
 
 
 : ISSPACE ( n -- flag )
