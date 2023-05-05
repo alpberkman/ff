@@ -1,35 +1,43 @@
 
 
 
-: ISUPPER ( n -- flag )
-    DUP [CHAR] A >=
-    SWAP [CHAR] Z <=
-    AND
+: ISUPPER ( n -- flag ) [CHAR] A [CHAR] Z <=<= ;
+: ISLOWER ( n -- flag ) [CHAR] a [CHAR] z <=<= ;
+: ISALPHA ( n -- flag ) DUP ISUPPER SWAP ISLOWER OR ;
+: ISDIGIT ( n -- flag ) [CHAR] 0 [CHAR] 9 <=<= ;
+: ISALNUM ( n -- flag ) DUP ISALPHA SWAP ISDIGIT OR ;
+: ISXDIGIT ( n -- flag )
+	0
+	OVER [CHAR] a [CHAR] f <=<= OR
+	OVER [CHAR] A [CHAR] F <=<= OR
+	OVER ISDIGIT OR
+	SWAP DROP
 ;
-: ISLOWER ( n -- flag )
-    DUP [CHAR] a >=
-    SWAP [CHAR] z <=
-    AND
+: ISSPACE ( n -- flag )
+    0
+    OVER 9 13 <=<= OR
+    OVER BL = OR
+    SWAP DROP
 ;
-: ISALPHA ( n -- flag )
-    DUP ISUPPER
-    SWAP ISLOWER
-    OR
+: ISCNTRL ( n -- flag )
+	0
+	OVER 0 31 <=<= OR
+	OVER 127 = OR
+	SWAP DROP
+;
+
+
+
+: TOLOWER ( n -- n )
+	DUP ISUPPER IF [ CHAR a CHAR A - ] LITERAL + THEN
+;
+: TOUPPER ( n -- n )
+	DUP ISLOWER IF [ CHAR a CHAR A - ] LITERAL - THEN
 ;
 
 
 
 
-1   int isalnum(int c)
-
-This function checks whether the passed character is alphanumeric.
-
-3 	int iscntrl(int c)
-
-This function checks whether the passed character is control character.
-4 	int isdigit(int c)
-
-This function checks whether the passed character is decimal digit.
 5 	int isgraph(int c)
 
 This function checks whether the passed character has graphical representation using locale.
@@ -40,19 +48,7 @@ This function checks whether the passed character is printable.
 8 	int ispunct(int c)
 
 This function checks whether the passed character is a punctuation character.
-9 	int isspace(int c)
 
-This function checks whether the passed character is white-space.
 
-11 	int isxdigit(int c)
 
-This function checks whether the passed character is a hexadecimal digit.
 
-The library also contains two conversion functions that accepts and returns an "int".
-Sr.No. 	Function & Description
-1 	int tolower(int c)
-
-This function converts uppercase letters to lowercase.
-2 	int toupper(int c)
-
-This function converts lowerc

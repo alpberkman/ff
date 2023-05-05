@@ -113,5 +113,29 @@ x debs drop
 : RED 27 emit [char] [ emit [char] 4 emit [char] 1 emit [char] m emit ;
 red 65 emit 10 emit
 
+: BETWEEN ( n l h -- flag ) >R OVER <= SWAP R> <= AND ;
+: << ( n l h -- flag ) >R OVER < SWAP R> < AND ;
+: <=< ( n l h -- flag ) >R OVER <= SWAP R> < AND ;
+: <<= ( n l h -- flag ) >R OVER < SWAP R> <= AND ;
+: <=<= ( n l h -- flag ) >R OVER <= SWAP R> <= AND ;
+
+
+: SPC ( -- char ) 32 ;
+: TAB ( -- char ) 9 ;
+: LF ( -- char ) 10 ;
+: VT ( -- char ) 11 ;
+: FF ( -- char ) 12 ;
+: CR ( -- char ) 13 ;
+
+: BL 32 ;
+
+
+
+
+
+
+
+
+
 
 
