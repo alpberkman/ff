@@ -4,14 +4,14 @@
 : FALSE 0 ;
 
 
-: VIS 1 7 LSHIFT ;
-: IMM 1 6 LSHIFT ;
-: LEN 31 ;
-
-
 : CELL+ CELL + ;
 : CELL- CELL - ;
 : CELLS CELL * ;
+
+
+: VIS 1 7 LSHIFT ;
+: IMM 1 6 LSHIFT ;
+: LEN 31 ;
 
 
 : IMMEDIATE LAST CELL+ DUP C@ IMM OR SWAP C! ;
@@ -26,11 +26,12 @@
 : LITERAL POSTPONE LIT POSTPONE LIT , , ; IMMEDIATE
 
 
+
 : [SELF] R> @ JMP ;
 : SELF ['] [SELF] , LAST CELL+ DUP C@ LEN AND + 1 + , ; IMMEDIATE
 
 
-: [IF] 5 CELLS IP + JZ R> CELL+ JMP R> @ JMP ;
+: [IF] [ 5 CELLS ] LITERAL IP + JZ R> CELL+ JMP R> @ JMP ;
 : IF ['] [IF] , HERE HERE CELL+ HERE! ; IMMEDIATE
 
 
@@ -50,11 +51,11 @@
 : AGAIN ['] [AGAIN] , , ; IMMEDIATE
 
 
-: [UNTIL] 5 CELLS IP + JZ R> CELL+ JMP R> @ JMP ;
+: [UNTIL] [ 5 CELLS ] LITERAL IP + JZ R> CELL+ JMP R> @ JMP ;
 : UNTIL ['] [UNTIL] , , ; IMMEDIATE
 
 
-: [WHILE] 5 CELLS IP + JZ R> CELL+ JMP R> @ JMP ;
+: [WHILE] [ 5 CELLS ] LITERAL IP + JZ R> CELL+ JMP R> @ JMP ;
 : WHILE ['] [WHILE] , HERE HERE CELL+ HERE! ; IMMEDIATE
 
 : [REPEAT] R> @ JMP ;
@@ -94,12 +95,23 @@
 
 
 
-: R@ R> DUP >R ;
+: R@ R> R> DUP SWAP >R SWAP >R ;
+: OVER 1 PICK ;
 
-\ THIS is a comment
+: >= < -1 XOR ;
+: <= > -1 XOR ;
+
+: INVERT -1 XOR ;
+: NEGATE INVERT 1 + ;
+
+WARN Testing R@ answer should be 666
+: x 666 >R R@ R> DROP ;
+x debs drop
 
 
-: x if 2 then ;
+: CLEAR 27 EMIT 99 EMIT ;
+: RED 27 emit [char] [ emit [char] 4 emit [char] 1 emit [char] m emit ;
+red 65 emit 10 emit
 
-WARN add postpone to the outer interpreter
+
 
