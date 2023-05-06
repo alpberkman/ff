@@ -85,7 +85,7 @@ enum prim {
     LDH, STRH,
     LDL, STRL,
 
-    CSZ, CFUN,
+    CSZ, CFUN, IO,
     /*KEY, EMIT, CALL,*/
 };
 

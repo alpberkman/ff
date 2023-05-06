@@ -142,6 +142,9 @@ void exec(VM *vm, cell opcode) {
     case CFUN:
         _cfun(vm);
         break;
+    case IO:
+        _io(vm);
+        break;
     /*
         case KEY:
             _key(vm);

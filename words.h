@@ -218,6 +218,9 @@ void words(VM *vm) {
     cell arr_cfun[] = {
         CFUN, RET,
     };
+    cell arr_io[] = {
+        IO, RET,
+    };
     /*
         cell arr_key[] = {
             KEY, RET,
@@ -271,8 +274,11 @@ void words(VM *vm) {
     word(vm, "LAST!", (char *) arr_strl, sizeof(arr_strl), MASK_VIS);
     word(vm, "CELL", (char *) arr_csz, sizeof(arr_csz), MASK_VIS);
     word(vm, "CFUN", (char *) arr_cfun, sizeof(arr_cfun), MASK_VIS);
-    cword(vm, "IO", _io, MASK_VIS);
+    word(vm, "IO", (char *) arr_io, sizeof(arr_io), MASK_VIS);
+
+
     /*
+        cword(vm, "IO", _io, MASK_VIS);
         word(vm, "KEY", (char *) arr_key, sizeof(arr_key), MASK_VIS);
         word(vm, "EMIT", (char *) arr_emit, sizeof(arr_emit), MASK_VIS);
     */
