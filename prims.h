@@ -206,11 +206,6 @@ void _io(VM *vm) {
     static FILE *e;
 
     switch(vm->ps[--vm->psp]) {
-    case -1:
-        i = stdin;
-        o = stdout;
-        e = stderr;
-        break;
     case 0:
         vm->ps[vm->psp++] = fgetc(i);
         break;
@@ -219,6 +214,11 @@ void _io(VM *vm) {
         break;
     case 2:
         fputc(vm->ps[--vm->psp], e);
+        break;
+    default:
+        i = stdin;
+        o = stdout;
+        e = stderr;
         break;
     }
 }
