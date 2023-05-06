@@ -1,5 +1,10 @@
 
 
+-1 IO
+: KEY 0 IO ;
+: EMIT 1 IO ;
+
+
 : TRUE -1 ;
 : FALSE 0 ;
 

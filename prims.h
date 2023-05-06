@@ -192,14 +192,6 @@ void _strl(VM *vm) {
     cell val = vm->ps[--vm->psp];
     vm->lp = val;
 }
-void _key(VM *vm) {
-    int c = fgetc(vm->i);
-    vm->ps[vm->psp++] = c;
-}
-void _emit(VM *vm) {
-    int c = vm->ps[--vm->psp];
-    fputc(c, vm->o);
-}
 void _csz(VM *vm) {
     vm->ps[vm->psp++] = CELL_SIZE;
 }
@@ -208,4 +200,29 @@ void _cfun(VM *vm) {
     vm->ip += CFUN_SIZE;
     cfun(vm);
 }
+void _io(VM *vm) {
+    static FILE *i;
+    static FILE *o;
+    static FILE *e;
 
+    switch(vm->ps[--vm->psp]) {
+        case -1:
+            i = stdin;
+            o = stdout;
+            e = stderr;
+            break;
+        case 0: vm->ps[vm->psp++] = fgetc(i); break;
+        case 1: fputc(vm->ps[--vm->psp], o); break;
+        case 2: fputc(vm->ps[--vm->psp], e); break;
+    }
+}
+/*
+void _key(VM *vm) {
+    int c = fgetc(vm->i);
+    vm->ps[vm->psp++] = c;
+}
+void _emit(VM *vm) {
+    int c = vm->ps[--vm->psp];
+    fputc(c, vm->o);
+}
+*/

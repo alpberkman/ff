@@ -6,8 +6,6 @@ void init(VM *vm) {
 
     vm->p = ON;
     vm->s = INTERPRET;
-    vm->i = stdin;
-    vm->o = stdout;
 
     for(i = 0; i < 0x100; ++i)
         vm->ps[i] = 0;
@@ -220,13 +218,14 @@ void words(VM *vm) {
     cell arr_cfun[] = {
         CFUN, RET,
     };
+/*
     cell arr_key[] = {
         KEY, RET,
     };
     cell arr_emit[] = {
         EMIT, RET,
     };
-
+*/
     word(vm, "NOP", (char *) arr_nop, sizeof(arr_nop), MASK_VIS);
     word(vm, "LIT", (char *) arr_lit, sizeof(arr_lit), MASK_VIS);
     word(vm, "BYE", (char *) arr_halt, sizeof(arr_halt), MASK_VIS);
@@ -272,9 +271,11 @@ void words(VM *vm) {
     word(vm, "LAST!", (char *) arr_strl, sizeof(arr_strl), MASK_VIS);
     word(vm, "CELL", (char *) arr_csz, sizeof(arr_csz), MASK_VIS);
     word(vm, "CFUN", (char *) arr_cfun, sizeof(arr_cfun), MASK_VIS);
+    cword(vm, "IO", _io, MASK_VIS);
+/*
     word(vm, "KEY", (char *) arr_key, sizeof(arr_key), MASK_VIS);
     word(vm, "EMIT", (char *) arr_emit, sizeof(arr_emit), MASK_VIS);
-
+*/
     cword(vm, "deb", debug, MASK_VIS | MASK_IMM);
     cword(vm, "deb_state", debug_state, MASK_VIS | MASK_IMM);
     cword(vm, "deb_stack", debug_stack, MASK_VIS | MASK_IMM);

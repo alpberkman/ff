@@ -140,12 +140,14 @@ void print_opcode(VM *vm, cell opcode) {
     case CFUN:
         printf("PRIM-CFUN ");
         break;
+/*
     case KEY:
         printf("PRIM-KEY ");
         break;
     case EMIT:
         printf("PRIM-EMIT ");
         break;
+*/
     default: {
         cell addr;
         for(addr = vm->lp; addr > opcode; addr = *((cell *) &(vm->mem[addr])));

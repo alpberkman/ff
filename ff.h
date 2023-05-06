@@ -42,8 +42,6 @@ enum state {
 struct VM {
     power p;
     state s;
-    FILE *i;
-    FILE *o;
 
     cell ps[0x100];
     byte psp;
@@ -88,7 +86,7 @@ enum prim {
     LDL, STRL,
 
     CSZ, CFUN,
-    KEY, EMIT, /*CALL,*/
+    /*KEY, EMIT, CALL,*/
 };
 
 /*

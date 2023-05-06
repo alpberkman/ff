@@ -142,12 +142,14 @@ void exec(VM *vm, cell opcode) {
     case CFUN:
         _cfun(vm);
         break;
+/*
     case KEY:
         _key(vm);
         break;
     case EMIT:
         _emit(vm);
         break;
+*/
     default:
         vm->rs[vm->rsp++] = vm->ip;
         vm->ip = opcode;
