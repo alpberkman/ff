@@ -13,7 +13,7 @@ void backup(void) {
 
 
 int main(/*int argc, char *argv[]*/) {
-
+	setbuf(stdout, NULL);
     atexit(backup);
 
     init(&vm);

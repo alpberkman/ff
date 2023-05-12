@@ -204,6 +204,8 @@ void _io(VM *vm) {
     static FILE *i;
     static FILE *o;
     static FILE *e;
+    static char filename[512];
+    static char mode[8];
 
     switch(vm->ps[--vm->psp]) {
     case 0:
@@ -215,6 +217,68 @@ void _io(VM *vm) {
     case 2:
         fputc(vm->ps[--vm->psp], e);
         break;
+
+    case 3:
+        vm->ps[vm->psp++] = fscanf(i, "%511s", filename);
+        break;
+    case 4:
+        vm->ps[vm->psp++] = fscanf(i, "%7s", mode);
+        break;
+
+    case 5:
+        i = fopen(filename, mode);
+        if(i == NULL) {
+            vm->ps[vm->psp++] = 0;
+            i = stdin;
+            o = stdout;
+            e = stderr;
+        } else {
+            vm->ps[vm->psp++] = -1;
+        }
+        break;
+    case 6:
+        o = fopen(filename, mode);
+        if(o == NULL) {
+            vm->ps[vm->psp++] = 0;
+            i = stdin;
+            o = stdout;
+            e = stderr;
+        } else {
+            vm->ps[vm->psp++] = -1;
+        }
+        break;
+    case 7:
+        e = fopen(filename, mode);
+        if(e == NULL) {
+            vm->ps[vm->psp++] = 0;
+            i = stdin;
+            o = stdout;
+            e = stderr;
+        } else {
+            vm->ps[vm->psp++] = -1;
+        }
+        break;
+
+    case 8:
+        fclose(i);
+        break;
+    case 9:
+        fclose(o);
+        break;
+    case 10:
+        fclose(e);
+        break;
+
+    case 11:
+        fflush(i);
+        break;
+    case 12:
+        fflush(o);
+        break;
+    case 13:
+        fflush(e);
+        break;
+
     default:
         i = stdin;
         o = stdout;

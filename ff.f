@@ -116,7 +116,7 @@ x debs drop
 
 : CLEAR 27 EMIT 99 EMIT ;
 : RED 27 emit [char] [ emit [char] 4 emit [char] 1 emit [char] m emit ;
-red 65 emit 10 emit
+\ red 65 emit 10 emit
 
 : BETWEEN ( n l h -- flag ) >R OVER <= SWAP R> <= AND ;
 : << ( n l h -- flag ) >R OVER < SWAP R> < AND ;
@@ -134,13 +134,8 @@ red 65 emit 10 emit
 
 : BL 32 ;
 
-
-
-
-
-
-
-
-
-
+(
+: FMT KEY TOUPPER DUP EMIT [CHAR] ;  <> IF SELF ELSE KEY DUP LF = IF DROP ELSE EMIT SELF THEN THEN ;
+)
+WARN : redx 27 emit ." [1;31m" ;
 
