@@ -7,25 +7,22 @@
 #define MEM_SIZE (0x8000)
 
 
-#define TRUE -1
 #define FALSE 0
+#define TRUE -1
 
 #define MASK_VIS (1<<7)
 #define MASK_IMM (1<<6)
 #define WORD_LEN (0x1f)
 
 #define CELL_SIZE ((cell) sizeof(cell))
-#define CFUN_SIZE ((cell) sizeof(fun))
 
-
-typedef struct VM VM;
-typedef enum power power;
-typedef enum state state;
-typedef void (*fun)(VM *vm);
 
 typedef signed short cell;
 typedef unsigned char byte;
 
+typedef enum power power;
+typedef enum state state;
+typedef struct VM VM;
 typedef enum prim prim;
 
 
@@ -57,69 +54,38 @@ struct VM {
 
 enum prim {
     NOP = ((cell) MEM_SIZE),
-    LIT, HALT,
+    LIT, CSZ, HALT,
 
-    DUP, DROP, SWAP,
-    PUSH, POP,
+    DUP, DROP, SWAP, PUSH, POP,
     PICKP, PICKR,
 
     JMP, JZ, RET,
 
     EQ, NEQ, LT, GT,
-
-    AND, OR, XOR,
-    SHR, SHL,
-
-    ADD, SUB, MUL,
-    DIV, MOD,
+    AND, OR, XOR, SHR, SHL,
+    ADD, SUB, MUL, DIV, MOD,
 
     LDC, STRC,
     LDB, STRB,
 
     LDS, STRS,
+    LDP, LDR
 
-    LDP, STRP,
-    LDR, STRR,
-
-    LDI, STRI,
     LDH, STRH,
     LDL, STRL,
 
-    CSZ, CFUN, IO,
-    /*KEY, EMIT, CALL,*/
+    KEY, EMIT,
+
+    FW, /*find word*/
+    SW, /*scan word*/
+    MH, /*make header*/
+    NUM, /*number*/
 };
 
-/*
-cell find_word(VM *vm, char *buf) {
-    cell addr;
-    byte flags;
-    cell len;
-    for(addr = vm->lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
-        len = strlen(buf);
-        if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
-                return addr;
-    }
-    return addr;
-}
-*/
 
 
 
-#include "debug.h"
 
-
-#include "prims.h"
-
-
-#include "run.h"
-
-
-#include "words.h"
-
-
-#include "interp.h"
 
 
 
