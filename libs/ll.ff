@@ -1,0 +1,115 @@
+variable fp
+here 16 allot variable fs
+: ( 
+  ' fp @ cells fs + ! 
+  fp @ 1 + fp !
+;
+
+: )
+  fp @ 1 - fp !
+  fp @ cells fs + @ execute
+;
+
+fp @ .
+( . ( @ ( fp ) ) )
+
+\ a word that compiles an array ( n name -- f ) as a stack?
+
+: % mod ;
+: stack ( n "name" -- )
+  dup , 0 ,
+  here swap
+  cells allot
+  variable
+;
+
+: .push ( n addr -- )
+  swap over dup         \ addr n addr addr
+  1 cells - @           \ addr n addr ctr
+  + !                   \ addr
+  dup 1 cells - @
+  1 +
+  over 2 cells - @ %
+  swap !
+;
+
+: .pop ( addr -- n )
+
+;
+
+
+
+
+
+
+
+: % mod ;
+
+: array ( n "name" -- )
+  here swap cells allot
+  here swap , constant
+;
+
+: stack ( n "name" -- )
+  dup , 0 , array
+;
+
+: stack-max ( addr -- n )
+  2 cells - @
+;
+
+: stack-ctr@ ( addr -- n )
+  1 cells - @
+;
+
+: stack-ctr! ( addr -- n )
+  1 cells - !
+;
+
+: .push ( n addr -- )
+  swap over dup stack-ctr@ cells + !
+  dup stack-ctr@ 1 +
+  \ over stack-max %
+  swap stack-ctr!
+;
+
+: .pop ( addr -- n )
+  dup stack-ctr@ 1 -
+  over stack-ctr!
+  cells + @
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

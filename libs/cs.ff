@@ -1,0 +1,94 @@
+: % mod ;
+
+: array ( n "name" -- )
+  here swap cells allot
+  constant
+;
+
+: stack ( n "name" -- )
+  dup , 0 , array
+;
+
+: stack-max ( addr -- n )
+  2 cells -
+;
+
+: stack-ctr ( addr -- n )
+  1 cells -
+;
+
+: .push ( n addr -- )
+  swap over dup
+  stack-ctr @ cells + !
+  stack-ctr dup
+  @ 1 + swap !
+;
+
+: .pop ( addr -- n )
+  dup stack-ctr 
+  dup @ 1 - swap !
+  dup stack-ctr @
+  cells + @
+;
+
+
+12 stack s1
+: t01 
+  cr
+  7 0 do i s1 .push loop
+;
+: t02
+  s1 stack-max @ .
+  s1 stack-ctr @ . cr
+  3 0 do s1 .pop . bl loop cr
+  s1 stack-max @ .
+  s1 stack-ctr @ .
+;
+t01 t02 bye
+
+
+
+
+: .push ( n addr -- )
+  swap over dup
+  stack-ctr @ cells + !
+  stack-ctr 1 swap +!
+;
+
+: .pop ( addr -- n )
+  -1 over stack-ctr +!
+  dup stack-ctr @
+  cells + @
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

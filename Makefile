@@ -1,14 +1,14 @@
 
 CC ?= gcc
-CFLAGS ?= -Wall -Wextra -O2 -ansi
-DFLAGS ?= -g
+CFLAGS ?= -Wall -Wextra -O2
+DFLAGS ?= -g -ansi
 SFLAGS ?= -Os -s
 
 .PHONY: ff
 
 all: ff
 
-ff: main.c ff.h
+ff: main.c ff.h setup.h
 	$(CC) $(CFLAGS) $(SFLAGS) -o $@ $^
 
 clean:
