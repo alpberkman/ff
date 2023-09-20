@@ -79,11 +79,11 @@ void list1(VM *vm) {
     cell end;
     byte flags;
 
-    printf("NAME        LEN VIS IMM INSTR\n");
-    printf("-----------------------------\n");
+    printf("NAME         LEN VIS IMM INSTR\n");
+    printf("------------------------------\n");
     for(addr = lp, end = hp; addr != 0; end = addr, addr = *((cell *) &(vm->mem[addr]))) {
         flags = vm->mem[addr + CELL_SIZE];
-        printf("%.*s %.*s%i   %c   %c   %02i : ",
+        printf("%.*s %.*s%2i   %c   %c   %02i : ",
             (flags & WORD_LEN), (char *) &(vm->mem[addr + CELL_SIZE + 1]),
             12 - (flags & WORD_LEN), "                               ",
             (flags & WORD_LEN),

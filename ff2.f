@@ -1,3 +1,36 @@
-: IMMEDIATE LAST @ CELL + DUP C@ 1 6 << OR SWAP C! ;
+
+
+: HERE HP @ ;
+: LAST LP @ ;
+
+
+: CELL+ CELL + ;
+: CELLS CELL * ;
+
+
+: PREV @ ;
+: FLAGS CELL + ;
+: IMM 1 6 << ;
+: VIS 1 7 << ;
+: LEN 31 ;
+: MARK OVER C@ OR SWAP C! ;
+: IMMEDIATE LAST FLAGS IMM MARK ;
+: VISIBLE LAST FLAGS VIS MARK ;
+
+
 : [ FALSE STATE ! ; IMMEDIATE
 : ] TRUE STATE ! ;
+
+
+: +! SWAP OVER @ + SWAP ! ;
+
+
+: , HERE ! CELL HP +! ;
+
+
+: [SELF] R> @ JMP ;
+: SELF
+  ['] [SELF] ,
+  LAST FLAGS LEN XOR
+  LAST + CELL + 1 + ,
+; IMMEDIATE

@@ -1,13 +1,18 @@
 
 #include "ff.h"
 #include "ff_interp.h"
+#include "ff_init.h"
+#include "ff_debug.h"
 
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 
-#define streq(X, Y) (strcmp((X), (Y)) == 0)
+#define streq(X, Y) (strcmp((char *)(X), (char *)(Y)) == 0)
+#define update \
+        (*((cell *) &(vm->mem[lp_addr]))) = lp; \
+        (*((cell *) &(vm->mem[hp_addr]))) = hp;
 
 extern cell hp;
 extern cell lp;
@@ -50,37 +55,86 @@ cell find(VM *vm) {
     if(addr == 0)
         return 0;
     else
-        return addr + CELL_SIZE + 1 + len;
+        return addr;
 }
 
 
 // postpone ' [']
 void interp(VM *vm) {
-    vm->ip = 0;
-    cell addr = find(vm);
-    if(addr != 0) {
-        (*((cell *) &(vm->mem[0]))) = addr;
-        (*((cell *) &(vm->mem[CELL_SIZE]))) = HALT;
-    } else {
+    if(streq(buf, ":")) {
+        (*((cell *) &(vm->mem[st_addr]))) = TTRUE;
+        read();
+        m_header(vm, (char *)buf, 0);
+        update;
+    } else if(streq(buf, "\'")) {
+        read();
+        cell addr = find(vm);
         (*((cell *) &(vm->mem[0]))) = LIT;
-        (*((cell *) &(vm->mem[CELL_SIZE]))) = atoi((char *)buf);
+        (*((cell *) &(vm->mem[CELL_SIZE]))) = addr ? addr + CELL_SIZE + 1 + len : 0;
         (*((cell *) &(vm->mem[CELL_SIZE*2]))) = HALT;
+    } else {
+        cell addr = find(vm);
+        if(addr != 0) {
+            (*((cell *) &(vm->mem[0]))) = addr + CELL_SIZE + 1 + len;
+            (*((cell *) &(vm->mem[CELL_SIZE]))) = HALT;
+        } else {
+            (*((cell *) &(vm->mem[0]))) = LIT;
+            (*((cell *) &(vm->mem[CELL_SIZE]))) = atoi((char *)buf);
+            (*((cell *) &(vm->mem[CELL_SIZE*2]))) = HALT;
+        }
     }
 }
 
 void compile(VM *vm) {
-
+    if(streq(buf, ";")) {
+        m_word(vm, "EXIT");
+        vm->mem[lp + CELL_SIZE] |= MASK_VIS;
+        (*((cell *) &(vm->mem[st_addr]))) = FFALSE;
+        update;
+    } else if(streq(buf, "[\']")) {
+        read();
+        cell addr = find(vm);
+        m_number(vm, addr ? addr + CELL_SIZE + 1 + len : 0);
+        update;
+    } else if(streq(buf, "POSTPONE")) {
+        read();
+        m_word(vm, (char *)buf);
+        update;
+    } else {
+        cell addr = find(vm);
+        byte flags = vm->mem[addr + CELL_SIZE];
+        if(addr != 0 && (flags & MASK_VIS)) {
+            if(flags & MASK_IMM) {
+                (*((cell *) &(vm->mem[0]))) = addr + CELL_SIZE + 1 + len;
+                (*((cell *) &(vm->mem[CELL_SIZE]))) = HALT;
+            } else {
+                m_word(vm, (char *)buf);
+                update;
+            }
+        } else {
+            m_number(vm, atoi((char *)buf));
+            update;
+        }
+    }
 }
 
 void eval(VM *vm) {
-    if(streq((char *)buf, "dump")) {
+    vm->ip = 0;
+    (*((cell *) &(vm->mem[0]))) = HALT;
+    printf("%s\n", buf);
+
+    if(streq(buf, "DUMP")) {
         dump(vm, "ff.dump");
         carr(vm, "rom.h");
-    } else if((*((cell *) &(vm->mem[hp]))) == FFALSE)
+    } else if(streq(buf, "L1")) {
+        list1(vm);
+    } else if(streq(buf, "L2")) {
+        list2(vm);
+    } else if((*((cell *) &(vm->mem[st_addr]))) == FFALSE) {
         interp(vm);
-    else
+    } else {
         compile(vm);
+    }
 }
-
 
 

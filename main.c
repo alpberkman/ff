@@ -28,11 +28,15 @@ int main(/*int argc, char *argv[]*/) {
     carr(&X, "rom.h");
 
     for(;;) {
+        //printf("LP: %i, HP: %i >>> ", (*((cell *) &(X.mem[lp_addr]))), (*((cell *) &(X.mem[hp_addr]))));
         printf(">>> ");
+        fflush(stdout);
         read();
         eval(&X);
         run(&X);
         stacks(&X);
+        lp = (*((cell *) &(X.mem[lp_addr])));
+        hp = (*((cell *) &(X.mem[hp_addr])));
     }
 
     return 0;

@@ -68,10 +68,12 @@ void m_number(VM *vm, cell num) {
 }
 void m_const(VM *vm, char *name, cell num) {
     m_header(vm, name, MASK_VIS);
+    //m_word(vm, "[CONSTANT]");
     m_number(vm, num);
     m_word(vm, "EXIT");
 }
 void m_var(VM *vm, char *name) {
+    m_word(vm, "[VARIABLE]");
     cell tmp = hp;
     *((cell *) &(vm->mem[hp])) = 0;
     m_alloc(vm, CELL_SIZE);
@@ -390,16 +392,26 @@ void ff_base_words(VM *vm) {
 }
 
 void ff_high_words(VM *vm) {
-    cell tmp;
 
-    tmp = hp;
+    HEADER(OVER, MASK_VIS);
+    NUMBER(1);
+    WORD(PICK);
+    WORD(EXIT);
+
+    HEADER([VARIABLE], MASK_VIS);
+    WORD(EXIT);
+
+    //HEADER([CONSTANT], MASK_VIS);
+    //WORD(EXIT);
+
+    st_addr = hp + CELL_SIZE;
     VAR(STATE);
-    SET(tmp, FFALSE);
+    SET(st_addr, FFALSE);
 
-    hp_addr = hp;
-    VAR(HERE);
-    lp_addr = hp;
-    VAR(LAST);
+    hp_addr = hp + CELL_SIZE;
+    VAR(HP);
+    lp_addr = hp + CELL_SIZE;
+    VAR(LP);
     SET(hp_addr, hp);
     SET(lp_addr, lp);
 

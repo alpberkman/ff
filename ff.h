@@ -89,10 +89,12 @@ enum power {
     ON = TTRUE,
 };
 
+/*
 enum state {
     INTERPRET = FFALSE,
     COMPILE = TTRUE,
 };
+*/
 
 struct VM {
     power p;
