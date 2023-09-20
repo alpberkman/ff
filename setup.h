@@ -2,8 +2,11 @@
 #include <string.h>
 #include <ctype.h>
 
+void stacks(VM *vm);
+
 cell hp;
 cell lp;
+
 
 void m_header(VM *vm, char *name, unsigned char flag) {
     cell i;
@@ -38,21 +41,44 @@ void m_word(VM *vm, char *word) {
     cell addr;
     byte flags;
     cell len = strlen(word);
+    char buf[32] = {0};
+    //puts(word);
+    for(cell i = 0; i < strlen(word); ++i)
+        buf[i] = toupper(word[i]);
+    //puts(buf);
 
     for(addr = lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
         flags = vm->mem[addr + CELL_SIZE];
         if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(word, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
+            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
                 break;
     }
 
     if(addr == 0) {
-        printf("Error in m_word %s at %i\n", word, addr);
+        printf("Error in m_word %s at %i\n", buf, addr);
         return;
     }
 
     *((cell *) &(vm->mem[hp])) =  addr + CELL_SIZE + 1 + len;
     hp += CELL_SIZE;
+}
+void m_num(VM *vm, cell num) {
+    m_word(vm, "LIT");
+    *((cell *) &(vm->mem[hp])) =  num;
+    hp += CELL_SIZE;
+}
+void m_var(VM *vm, char *name) {
+    cell tmp = hp;
+    *((cell *) &(vm->mem[hp])) = 0;
+    m_alloc(vm, CELL_SIZE);
+    m_header(vm, name, MASK_VIS);
+    m_num(vm, tmp);
+    m_word(vm, "EXIT");
+}
+void m_const(VM *vm, char *name, cell num) {
+    m_header(vm, name, MASK_VIS);
+    m_num(vm, num);
+    m_word(vm, "EXIT");
 }
 /*
 void m_if(VM *vm) {
@@ -92,14 +118,21 @@ void m_repeat(VM *vm) {}
 #define LITERAL(num) m_literal(vm, num);
 #define ALLOC(num) m_alloc(vm, num);
 #define WORD(name) m_word(vm, STR(name));
-
+#define NUMBER(num) m_num(vm, num);
+#define VAR(name) m_var(vm, STR(name));
+#define CONST(name, num) m_const(vm, STR(name), num);
 //#define entry(name, entry) HEADER(name, entry) OPCODES()
 
 void init(VM *vm) {
+
+
+    cell tmp, tmp0, tmp1, tmp2, tmp3;
+
+
     for(int i = 0; i < MEM_SIZE; ++i)
         vm->mem[i] = 0;
 
-    ALLOC(16);
+    ALLOC(16+256);
 
 
     // Special
@@ -155,10 +188,10 @@ void init(VM *vm) {
     HEADER(swap, MASK_VIS);
     OPCODES(op_swap);
 
-    HEADER(push, MASK_VIS);
+    HEADER(R<, MASK_VIS);
     OPCODES(op_push);
 
-    HEADER(pop, MASK_VIS);
+    HEADER(R>, MASK_VIS);
     OPCODES(op_pop);
 
     HEADER(pick, MASK_VIS);
@@ -188,7 +221,7 @@ void init(VM *vm) {
     HEADER(jz, MASK_VIS);
     OPCODES(op_jz);
 
-    HEADER(ret, MASK_VIS);
+    HEADER(exit, MASK_VIS);
     OPCODES(op_ret);
 
 
@@ -395,15 +428,162 @@ void init(VM *vm) {
     HEADER(CALL, MASK_VIS);
     OPCODES(op_call);
 
-    HEADER(ASDF, MASK_VIS);
-    OPCODES(op_call);
-    WORD(PICK);
-    OPCODES(op_call);
 
+    HEADER(XXXXXXXXXXXXXX, MASK_VIS);
+    WORD(EXIT);
+
+
+    // High level words
+    // State & friends
+
+/*
+    tmp = hp;
+    ALLOC(CELL_SIZE);
+    HEADER(STATE, MASK_VIS);
+    NUMBER(tmp);
+    WORD(EXIT);
+*/
+    VAR(STATE);
+
+    HEADER(STATE@, MASK_VIS);
+    WORD(STATE);
+    WORD(@);
+    WORD(EXIT);
+
+    HEADER(STATE!, MASK_VIS);
+    WORD(STATE);
+    WORD(!);
+    WORD(EXIT);
+
+    HEADER([, MASK_VIS | MASK_IMM);
+    WORD(false);
+    WORD(STATE!);
+    WORD(EXIT);
+
+    HEADER(], MASK_VIS);
+    WORD(true);
+    WORD(STATE!);
+    WORD(EXIT);
+
+    HEADER(CELLS, MASK_VIS);
+    WORD(CELL);
+    WORD(*);
+    WORD(EXIT);
+
+    HEADER(CELL+, MASK_VIS);
+    WORD(CELL);
+    WORD(+);
+    WORD(EXIT);
+
+    HEADER(+!, MASK_VIS);
+    WORD(SWAP);
+    NUMBER(1);
+    WORD(PICK);
+    WORD(@);
+    WORD(+);
+    WORD(SWAP);
+    WORD(!);
+    WORD(EXIT);
+
+
+    VAR(READ-CTR);
+
+    tmp = hp;
+    ALLOC(32);
+    CONST(READ-BUF, tmp);
+
+    HEADER(READ-APPEND, MASK_VIS);
+    WORD(READ-BUF);
+    WORD(READ-CTR);
+    WORD(@);
+    WORD(+);
+    WORD(!);
+    NUMBER(1);
+    WORD(READ-CTR);
+    WORD(+!);
+    WORD(EXIT);
+
+    HEADER(READ, MASK_VIS);
+    NUMBER(0);
+    WORD(READ-CTR);
+    WORD(!);
+    WORD(EXIT);
+
+
+// if then else
+    HEADER([IF], MASK_VIS);
+    HEADER(IF, MASK_VIS | MASK_IMM);
+
+
+/*
+: [IF] [ 5 CELLS ] LITERAL IP + JZ R> CELL+ JMP R> @ JMP ;
+: IF ['] [IF] , HERE HERE CELL+ HERE! ; IMMEDIATE
+
+
+: [THEN] ;
+: THEN ['] [THEN] , HERE SWAP ! ; IMMEDIATE
+
+
+: [ELSE] R> @ JMP ;
+: ELSE ['] [ELSE] , >R HERE HERE CELL+ HERE! R> HERE SWAP ! ; IMMEDIATE
+
+*/
+
+
+    HEADER(READ, MASK_VIS);
+    WORD(KEY);
+    WORD(EMIT);
+    WORD(EXIT);
+
+/*
+
+READ-APPEND:
+READ-BUF READ-CTR @ + !
+1 READ-CTR +!
+
+READ:
+0 READ-CTR !
+BEGIN
+    KEY DUP ISSPACE
+WHILE
+    DROP
+REPEAT
+READ-APPEND
+BEGIN
+    KEY
+    DUP ISSPACE IF DROP EXIT THEN
+    READ-APPEND
+    READ-CTR @ 30 31 =
+UNTIL
+*/
+
+
+    // XXXXXXXXXXX
+    HEADER(TEST, 0);
+    vm->ip = hp;
+
+    WORD(KEY);
+    WORD(READ-APPEND);
+    WORD(KEY);
+    WORD(READ-APPEND);
+    WORD(KEY);
+    WORD(READ-APPEND);
+    WORD(KEY);
+    WORD(READ-APPEND);
+
+    WORD(READ-CTR);
+    WORD(@);
+
+    WORD(HALT);
+    run(vm);
+    return;
+
+
+    /*
     vm->ps[(vm->psp)++] = 4;
     vm->ps[(vm->psp)++] = 7;
     vm->rs[(vm->rsp)++] = 1;
-
+    */
 
 
     //cell x[] = {LIT, 1, LIT, 3, ADD};
@@ -420,7 +600,8 @@ void disasm(VM *vm, cell addr, cell begin, cell end) {
             case LIT:
                 printf("LIT");
                 begin += CELL_SIZE;
-                printf("\n%04x %i", begin, *((cell *) &(vm->mem[begin])));
+                printf(" (%i)", *((cell *) &(vm->mem[begin])));
+                printf("\n%04x %i/%04x", begin, *((cell *) &(vm->mem[begin])), *((cell *) &(vm->mem[begin])));
                 break;
             case HALT: printf("HALT"); break;
             case DUP: printf("DUP"); break;
@@ -478,7 +659,7 @@ void disasm(VM *vm, cell addr, cell begin, cell end) {
     puts("");
 }
 
-void list(VM *vm) {
+void list1(VM *vm) {
     cell addr;
     cell end;
     byte flags;
@@ -487,7 +668,7 @@ void list(VM *vm) {
     printf("-----------------------------\n");
     for(addr = lp, end = hp; addr != 0; end = addr, addr = *((cell *) &(vm->mem[addr]))) {
         flags = vm->mem[addr + CELL_SIZE];
-        printf("%.*s %.*s%i   %c   %c   %02i\n",
+        printf("%.*s %.*s%i   %c   %c   %02i : ",
             (flags & WORD_LEN), (char *) &(vm->mem[addr + CELL_SIZE + 1]),
             12 - (flags & WORD_LEN), "                               ",
             (flags & WORD_LEN),
@@ -495,21 +676,43 @@ void list(VM *vm) {
             (flags & MASK_IMM) ? '+' : '-',//"IMM" : "NIM",
             end - addr - CELL_SIZE - 1 - (flags & WORD_LEN)
         );
-        //for(int i = 0; i < (end - addr - CELL_SIZE - 1 - (flags & WORD_LEN))/CELL_SIZE; ++i)
-        //    printf("%04x ", *((cell *) &(vm->mem[addr + CELL_SIZE + 1 + (flags & WORD_LEN) + i*CELL_SIZE])));
-        //puts("");
-        disasm(vm, addr, addr + CELL_SIZE + 1 + (flags & WORD_LEN), end);
+        for(int i = 0; i < (end - addr - CELL_SIZE - 1 - (flags & WORD_LEN))/CELL_SIZE; ++i)
+            printf("%04x ", *((cell *) &(vm->mem[addr + CELL_SIZE + 1 + (flags & WORD_LEN) + i*CELL_SIZE])));
+        puts("");
     }
+    puts("\n\n");
 }
 
+void list2(VM *vm) {
+    cell addr;
+    cell end;
+    byte flags;
+
+    printf("NAME        LEN VIS IMM INSTR\n");
+    printf("-----------------------------\n");
+    for(addr = lp, end = hp; addr != 0; end = addr, addr = *((cell *) &(vm->mem[addr]))) {
+        flags = vm->mem[addr + CELL_SIZE];
+        printf("%.*s %.*s%i   %c   %c   %02i :\n",
+            (flags & WORD_LEN), (char *) &(vm->mem[addr + CELL_SIZE + 1]),
+            12 - (flags & WORD_LEN), "                               ",
+            (flags & WORD_LEN),
+            (flags & MASK_VIS) ? '+' : '-',//"VIS" : "INV",
+            (flags & MASK_IMM) ? '+' : '-',//"IMM" : "NIM",
+            end - addr - CELL_SIZE - 1 - (flags & WORD_LEN)
+        );
+        disasm(vm, addr, addr + CELL_SIZE + 1 + (flags & WORD_LEN), end);
+    }
+    puts("\n\n");
+}
 
 void stacks(VM *vm) {
-    printf("%i> ", vm->psp);
+    printf("IP<%i>\n", vm->ip);
+    printf("P<%i> ", vm->psp);
     for(int i = 0; i < vm->psp; ++i)
         printf("%i ", vm->ps[i]);
     puts("");
 
-    printf("%i> ", vm->rsp);
+    printf("R<%i> ", vm->rsp);
     for(int i = 0; i < vm->rsp; ++i)
         printf("%i ", vm->rs[i]);
     puts("");

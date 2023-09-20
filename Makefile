@@ -1,6 +1,6 @@
 
 CC ?= gcc
-CFLAGS ?= -Wall -Wextra -O2
+CFLAGS ?= -Wall -Wextra -O2 -Wno-unused-variable
 DFLAGS ?= -g -ansi
 SFLAGS ?= -Os -s
 
@@ -8,7 +8,7 @@ SFLAGS ?= -Os -s
 
 all: ff
 
-ff: main.c ff.h setup.h
+ff: main.c ff.c ff_init.c ff_debug.c ff_interp.c
 	$(CC) $(CFLAGS) $(SFLAGS) -o $@ $^
 
 clean:

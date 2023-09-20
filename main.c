@@ -1,20 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "ff.h"
-#include "setup.h"
 
+
+#include "ff.h"
+cell hp;
+cell lp;
+cell hp_addr;
+cell lp_addr;
+cell st_addr;
+#include "ff_init.h"
+#include "ff_debug.h"
+#include "ff_interp.h"
+
+#define streq(X, Y) (strcmp((X), (Y)) == 0)
 #define pint(X) printf("%i\n", X)
 
 
 int main(/*int argc, char *argv[]*/) {
     VM X;
-    init(&X);
-    list(&X);
+    ff_init_words(&X);
+    list1(&X);
+    list2(&X);
     stacks(&X);
-    exec(&X, ADD);
-    stacks(&X);
+    //exec(&X, ADD);
+    //stacks(&X);
     dump(&X, "ff.dump");
     carr(&X, "rom.h");
+
+    for(;;) {
+        printf(">>> ");
+        read();
+        eval(&X);
+        run(&X);
+        stacks(&X);
+    }
 
     return 0;
 }

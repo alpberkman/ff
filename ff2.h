@@ -2,9 +2,6 @@
 
 #define CELL_TYPE unsigned short
 #define MEM_SIZE (0x8000)
-//#define PS_SIZE (0x100)
-//#define RS_SIZE (0x100)
-
 
 #define FFALSE (0)
 #define TTRUE (-1)
@@ -20,10 +17,32 @@
 typedef CELL_TYPE cell;
 typedef unsigned char byte;
 
-typedef enum power power;
-typedef enum state state;
-typedef struct VM VM;
 typedef enum prim prim;
+typedef enum power power;
+typedef struct VM VM;
+typedef struct SPU SPU;
+
+
+
+
+typedef byte MEM[MEM_SIZE];
+typedef struct SPU SPU;
+struct SPU {
+    power p;
+    cell ip;
+
+    cell ps[0x100];
+    byte psp;
+
+    cell rs[0x100];
+    byte rsp;
+};
+
+typedef struct vm vm;
+struct vm {
+    mem *m;
+    spu *s;
+};
 
 
 void _nop(VM *vm);
@@ -96,7 +115,6 @@ enum state {
 
 struct VM {
     power p;
-    //state s;
 
     cell ps[0x100];
     byte psp;
@@ -106,8 +124,6 @@ struct VM {
 
     byte mem[MEM_SIZE];
     cell ip;
-    //cell hp;
-    //cell lp;
 };
 
 enum prim {
@@ -141,6 +157,5 @@ CALL,
 FF,
 };
 #endif
-
 
 
