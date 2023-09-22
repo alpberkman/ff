@@ -202,7 +202,7 @@ cell next(VM *vm) {
     return opcode;
 }
 void exec(VM *vm, cell opcode) {
-    printf("op: %04x\n", opcode);
+    //printf("op: %04x\n", opcode);
     switch(opcode) {
         case NOP: _nop(vm); break;
         case LIT: _lit(vm); break;

@@ -28,3 +28,6 @@ LIT : POP, DUP, CSZ, ADD, PUSH, LDC, RET
 : ALLOT CELLS HERE@ + HERE! ;
 
 : LITERAL ['] LIT , , ; IMMEDIATE
+
+: 1+! ;
+: CELL+! ;
