@@ -72,6 +72,10 @@ void interp(VM *vm) {
         (*((cell *) &(vm->mem[0]))) = LIT;
         (*((cell *) &(vm->mem[CELL_SIZE]))) = addr ? addr + CELL_SIZE + 1 + len : 0;
         (*((cell *) &(vm->mem[CELL_SIZE*2]))) = HALT;
+    } else if(streq(buf, "VARIABLE")) {
+        read();
+        m_var(vm, (char *)buf);
+        update;
     } else {
         cell addr = find(vm);
         if(addr != 0) {
@@ -121,7 +125,7 @@ void compile(VM *vm) {
 void eval(VM *vm) {
     vm->ip = 0;
     (*((cell *) &(vm->mem[0]))) = HALT;
-    printf("%s\n", buf);
+    //printf("%s\n", buf);
 
     if(streq(buf, "DUMP")) {
         dump(vm, "ff.dump");

@@ -11,7 +11,7 @@
 : BYTE+ BYTE + ;
 : BYTES BYTE * ;
 
-: B2C BYTE * CELL / ;
+: B2C DUP BYTE * CELL / SWAP CELL % + ;
 : C2B CELL * BYTE / ;
 
 
@@ -45,6 +45,7 @@
 : +! SWAP OVER @ + SWAP ! ;
 : ALLOT HP +! ;
 : , HERE ! CELL ALLOT ;
+: C, HERE C! BYTE ALLOT ;
 
 
 : LITERAL ['] LIT , , ; IMMEDIATE
@@ -176,8 +177,7 @@
   DUP WORD-PRINT
   BL EMIT
   PREV
-  REPEAT
-  LF EMIT
+  REPEAT LF EMIT DROP
 ;
 
 : ENTRY-FIND ( addr -- addr )
@@ -207,6 +207,74 @@
   REPEAT DROP DROP LF EMIT
 ;
 
+
+VARIABLE READ-CTR
+0 READ-CTR !
+
+: READ-BUF-SIZE 31 ;
+HERE READ-BUF-SIZE ALLOT
+: READ-BUF LITERAL ;
+
+: READ-APPEND
+  READ-BUF READ-CTR @ + !
+  1 READ-CTR +!
+;
+
+: READ
+  0 READ-CTR !
+  CHAR READ-APPEND
+  BEGIN
+    KEY DUP ISSPACE IF DROP EXIT THEN
+    READ-APPEND READ-CTR @ READ-BUF-SIZE =
+  UNTIL
+;
+
+: BUF-PRINT READ-BUF READ-CTR @ N-PRINT ;
+
+: ?EXIT IF R> DROP EXIT THEN ;
+
+: STRNCMP ( addr1 addr2 n -- n )
+
+;
+
+: ENTRY-HEADER
+(
+  HERE
+  LAST ,
+  LP !
+  READ-CTR @ C,
+)
+;
+: :
+  READ
+  HERE
+  LAST ,
+  LP !
+  READ-CTR @ C,
+  READ-CTR @ 0
+  BEGIN OVER OVER > WHILE
+    DUP READ-BUF + @ C,
+    1+
+  REPEAT DROP DROP ]
+;
+
+: ;
+  LAST FLAGS VIS MARK
+  ['] EXIT ,
+;
+
+: CONSTANT : POSTPONE LITERAL POSTPONE ; ;
+
+(
+
+: TEST   10 0 DO  CR ." Hello "  LOOP ;
+: [DO] R> R> 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
+: DO
+  LITERAL LITERAL
+  ['] [']
+)
+
+(
 : echo key dup [ key q ] LITERAL = if drop exit else emit self THEN ;
 : echo2 begin key dup [ key q ] LITERAL = if drop exit else emit then again ;
 : echo3 begin key dup emit [ key q ] LITERAL = until ;
@@ -216,5 +284,52 @@
 
 
 : x begin dup while dup 1- repeat ;
+)
 : CLEAR 27 EMIT 99 EMIT ;
 : RED 27 emit [char] [ emit [char] 4 emit [char] 1 emit [char] m emit ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dump
+clear
+
+
+
+: MOVE ( addr1 addr2 u -- ) WARN move doesnt work
+  0 BEGIN OVER OVER > WHILE
+    4 PICK 1 PICK + @
+    4 PICK 2 PICK + !
+    1+
+  REPEAT DROP DROP DROP DROP
+;
+
+
+(
+WARN \
+make if else then and other loop constructs relocatable \
+: inline \
+  postpone ' HERE OVER DUP ENTRY-END SWAP - \
+  MOVE \
+;
+
+)
+
+
+
+
+
+
+
+
+

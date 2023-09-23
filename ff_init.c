@@ -406,15 +406,14 @@ void ff_high_words(VM *vm) {
 
     st_addr = hp + CELL_SIZE;
     VAR(STATE);
-    SET(st_addr, FFALSE);
-
     hp_addr = hp + CELL_SIZE;
     VAR(HP);
     lp_addr = hp + CELL_SIZE;
     VAR(LP);
+
+    SET(st_addr, FFALSE);
     SET(hp_addr, hp);
     SET(lp_addr, lp);
-
 }
 
 void ff_init_words(VM *vm) {

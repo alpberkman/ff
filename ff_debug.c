@@ -132,3 +132,9 @@ void stacks(VM *vm) {
         printf("%i ", vm->rs[i]);
     puts("");
 }
+
+void stacks2(VM *vm) {
+    for(int i = 0; i < vm->psp; ++i)
+        printf("%i ", vm->ps[i]);
+    printf(">>> ");
+}

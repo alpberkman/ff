@@ -1,0 +1,10 @@
+: 1 1 ;
+makes size of next 1 number 1 cell instead of 2 cells
+
+: BYTES ; IMMEDIATE
+next time bytes is used it is not actually compiled
+but makes code more readable
+BSP:
+: 32-BYTES-ALLOT 32 BYTES ALLOT ;
+is equal to
+: 32-BYTES-ALLOT 32 ALLOT ;
