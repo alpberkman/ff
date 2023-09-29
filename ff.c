@@ -158,6 +158,9 @@ void _strb(VM *vm) {
 void _cell(VM *vm) {
     vm->ps[vm->psp++] = CELL_SIZE;
 }
+void _byte(VM *vm) {
+    vm->ps[vm->psp++] = BYTE_SIZE;
+}
 void _mem(VM *vm) {
     vm->ps[vm->psp++] = MEM_SIZE;
 }
@@ -238,6 +241,7 @@ void exec(VM *vm, cell opcode) {
         case LDB: _ldb(vm); break;
         case STRB: _strb(vm); break;
         case CELL: _cell(vm); break;
+        case BYTE: _byte(vm); break;
         case MEM: _mem(vm); break;
         case LDP: _ldp(vm); break;
         case STRP: _strp(vm); break;

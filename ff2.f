@@ -1,120 +1,5 @@
 
 
-: HERE HP @ ;
-: LAST LP @ ;
-
-
-: CELL+ CELL + ;
-: CELLS CELL * ;
-
-: BYTE 1 ;
-: BYTE+ BYTE + ;
-: BYTES BYTE * ;
-
-: B2C DUP BYTE * CELL / SWAP CELL % + ;
-: C2B CELL * BYTE / ;
-
-
-: 1+ 1 + ;
-: 1- 1 - ;
-
-
-: IMM 1 6 << ;
-: VIS 1 7 << ;
-: LEN 31 ;
-
-: IMM? C@ IMM AND ;
-: VIS? C@ VIS AND ;
-: LEN? C@ LEN AND ;
-
-: LINK ;
-: FLAGS CELL+ ;
-: NAME CELL+ BYTE+ ;
-: CODE DUP FLAGS LEN? SWAP NAME + ;
-: PREV @ ;
-
-: MARK OVER C@ OR SWAP C! ;
-: IMMEDIATE LAST FLAGS IMM MARK ;
-: VISIBLE LAST FLAGS VIS MARK ; IMMEDIATE
-
-
-: [ FALSE STATE ! ; IMMEDIATE
-: ] TRUE STATE ! ;
-
-
-: +! SWAP OVER @ + SWAP ! ;
-: ALLOT HP +! ;
-: , HERE ! CELL ALLOT ;
-: C, HERE C! BYTE ALLOT ;
-
-
-: LITERAL ['] LIT , , ; IMMEDIATE
-
-
-: [SELF] R> @ JMP ;
-: SELF
-  ['] [SELF] ,
-  LAST CODE ,
-; IMMEDIATE
-
-
-: [IF] 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
-: IF
-  ['] [IF] ,
-  HERE
-  CELL ALLOT
-; IMMEDIATE
-
-: [THEN] ;
-: THEN
-  ['] [THEN] ,
-  HERE SWAP !
-; IMMEDIATE
-
-: [ELSE] R> @ JMP ;
-: ELSE
-  ['] [ELSE] ,
-  HERE SWAP
-  CELL ALLOT
-  HERE SWAP !
-; IMMEDIATE
-
-
-: [BEGIN] ;
-: BEGIN
-  ['] [BEGIN] ,
-  HERE
-; IMMEDIATE
-
-: [AGAIN] R> @ JMP ;
-: AGAIN
-  ['] [AGAIN] ,
-  ,
-; IMMEDIATE
-
-: [UNTIL] 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
-: UNTIL
-  ['] [UNTIL] ,
-  ,
-; IMMEDIATE
-
-: [WHILE] 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
-: WHILE
-  ['] [WHILE] ,
-  HERE
-  CELL ALLOT
-; IMMEDIATE
-
-: [REPEAT] R> @ JMP ;
-: REPEAT
-  ['] [REPEAT] ,
-  SWAP ,
-  HERE SWAP !
-; IMMEDIATE
-
-
-: \ KEY 10 <> IF SELF THEN ; IMMEDIATE
-: ( KEY 41 <> IF SELF THEN ; IMMEDIATE
 : WARN KEY
 	DUP 92 = IF
 		KEY DUP 10 = IF
@@ -128,26 +13,7 @@
 ; IMMEDIATE
 
 
-: BL ( -- char ) 32 ;
-: HT ( -- char ) 09 ;
-: LF ( -- char ) 10 ;
-: VT ( -- char ) 11 ;
-: FF ( -- char ) 12 ;
-: CR ( -- char ) 13 ;
 
-
-: ISSPACE ( n -- flag )
-  0
-  OVER BL = OR
-  OVER HT = OR
-  OVER LF = OR
-  OVER VT = OR
-  OVER FF = OR
-  OVER CR = OR
-  SWAP DROP
-;
-: CHAR BEGIN KEY DUP ISSPACE WHILE DROP REPEAT ;
-: [CHAR] CHAR POSTPONE LITERAL ; IMMEDIATE
 
 
 : .
@@ -159,7 +25,7 @@
 
 : N-PRINT ( addr n -- )
   OVER + SWAP
-  BEGIN OVER OVER <> WHILE
+  BEGIN OVER OVER > WHILE
     DUP @ EMIT
     1+
   REPEAT DROP DROP
@@ -261,30 +127,12 @@ HERE READ-BUF-SIZE ALLOT
 : ;
   LAST FLAGS VIS MARK
   ['] EXIT ,
-;
+  ['] [;] ,
+; IMMEDIATE
 
 : CONSTANT : POSTPONE LITERAL POSTPONE ; ;
 
-(
 
-: TEST   10 0 DO  CR ." Hello "  LOOP ;
-: [DO] R> R> 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
-: DO
-  LITERAL LITERAL
-  ['] [']
-)
-
-(
-: echo key dup [ key q ] LITERAL = if drop exit else emit self THEN ;
-: echo2 begin key dup [ key q ] LITERAL = if drop exit else emit then again ;
-: echo3 begin key dup emit [ key q ] LITERAL = until ;
-
-: DUP? DUP IF DUP THEN ;
-: TF IF TRUE ELSE FALSE THEN ;
-
-
-: x begin dup while dup 1- repeat ;
-)
 : CLEAR 27 EMIT 99 EMIT ;
 : RED 27 emit [char] [ emit [char] 4 emit [char] 1 emit [char] m emit ;
 
@@ -298,32 +146,6 @@ HERE READ-BUF-SIZE ALLOT
 
 
 
-
-
-
-dump
-clear
-
-
-
-: MOVE ( addr1 addr2 u -- ) WARN move doesnt work
-  0 BEGIN OVER OVER > WHILE
-    4 PICK 1 PICK + @
-    4 PICK 2 PICK + !
-    1+
-  REPEAT DROP DROP DROP DROP
-;
-
-
-(
-WARN \
-make if else then and other loop constructs relocatable \
-: inline \
-  postpone ' HERE OVER DUP ENTRY-END SWAP - \
-  MOVE \
-;
-
-)
 
 
 

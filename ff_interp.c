@@ -65,6 +65,7 @@ void interp(VM *vm) {
         (*((cell *) &(vm->mem[st_addr]))) = TTRUE;
         read();
         m_header(vm, (char *)buf, 0);
+        m_word(vm, "[:]");
         update;
     } else if(streq(buf, "\'")) {
         read();
@@ -91,7 +92,7 @@ void interp(VM *vm) {
 
 void compile(VM *vm) {
     if(streq(buf, ";")) {
-        m_word(vm, "EXIT");
+        m_word(vm, "[;]");
         vm->mem[lp + CELL_SIZE] |= MASK_VIS;
         (*((cell *) &(vm->mem[st_addr]))) = FFALSE;
         update;

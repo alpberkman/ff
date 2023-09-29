@@ -1,0 +1,6 @@
+clear
+vocab
+' vocab disasm
+
+
+

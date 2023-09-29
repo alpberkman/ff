@@ -15,6 +15,7 @@
 
 
 #define CELL_SIZE ((cell) sizeof(cell))
+#define BYTE_SIZE ((cell) sizeof(byte))
 
 
 typedef CELL_TYPE cell;
@@ -60,6 +61,7 @@ void _strc(VM *vm);
 void _ldb(VM *vm);
 void _strb(VM *vm);
 void _cell(VM *vm);
+void _byte(VM *vm);
 void _mem(VM *vm);
 void _ldp(VM *vm);
 void _strp(VM *vm);
@@ -130,7 +132,8 @@ ADD, SUB, MUL, DIV, MOD,
 // Memory
 LDC, STRC,
 LDB, STRB,
-CELL, MEM,
+CELL, BYTE,
+MEM,
 // Special
 LDP, STRP,
 LDR, STRR,

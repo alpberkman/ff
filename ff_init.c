@@ -68,9 +68,9 @@ void m_number(VM *vm, cell num) {
 }
 void m_const(VM *vm, char *name, cell num) {
     m_header(vm, name, MASK_VIS);
-    //m_word(vm, "[CONSTANT]");
+    m_word(vm, "[:]");
     m_number(vm, num);
-    m_word(vm, "EXIT");
+    m_word(vm, "[;]");
 }
 void m_var(VM *vm, char *name) {
     m_word(vm, "[VARIABLE]");
@@ -305,6 +305,9 @@ void ff_base_words(VM *vm) {
     cell op_cell[] = {
         CELL, RET,
     };
+    cell op_byte[] = {
+        BYTE, RET,
+    };
     cell op_mem[] = {
         MEM, RET,
     };
@@ -323,6 +326,9 @@ void ff_base_words(VM *vm) {
 
     HEADER(CELL, MASK_VIS);
     OPCODES(op_cell);
+
+    HEADER(BYTE, MASK_VIS);
+    OPCODES(op_byte);
 
     HEADER(MEM, MASK_VIS);
     OPCODES(op_mem);
@@ -389,31 +395,43 @@ void ff_base_words(VM *vm) {
 
     HEADER(CALL, MASK_VIS);
     OPCODES(op_call);
+
+    // Tags
+    cell tag_colon[] = {
+        RET,
+    };
+    cell tag_semicolon[] = {
+        POP, DROP, RET,
+    };
+    cell tag_variable[] = {
+        RET,
+    };
+
+    HEADER([:], MASK_VIS);
+    OPCODES(tag_colon);
+
+    HEADER([;], MASK_VIS);
+    OPCODES(tag_semicolon);
+
+    HEADER([VARIABLE], MASK_VIS);
+    OPCODES(tag_variable);
 }
 
 void ff_high_words(VM *vm) {
-
-    HEADER(OVER, MASK_VIS);
-    NUMBER(1);
-    WORD(PICK);
-    WORD(EXIT);
-
-    HEADER([VARIABLE], MASK_VIS);
-    WORD(EXIT);
-
-    //HEADER([CONSTANT], MASK_VIS);
-    //WORD(EXIT);
-
-    st_addr = hp + CELL_SIZE;
-    VAR(STATE);
     hp_addr = hp + CELL_SIZE;
     VAR(HP);
     lp_addr = hp + CELL_SIZE;
     VAR(LP);
+    st_addr = hp + CELL_SIZE;
+    VAR(STATE);
 
-    SET(st_addr, FFALSE);
+    /* If needed other words in C
+
+    */
+
     SET(hp_addr, hp);
     SET(lp_addr, lp);
+    SET(st_addr, FFALSE);
 }
 
 void ff_init_words(VM *vm) {

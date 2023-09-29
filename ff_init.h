@@ -14,6 +14,8 @@
 #define VAR(name) m_var(vm, STR(name));
 #define VAR2(name, num) m_var2(vm, STR(name), num);
 #define SET(ADDR, NUM) *((cell *) &(vm->mem[ADDR])) = NUM;
+#define H(name, flag) HEADER(name, flag); WORD([:]);
+#define T() WORD([;]);
 
 
 void m_header(VM *vm, char *name, unsigned char flag);

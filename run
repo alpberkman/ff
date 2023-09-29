@@ -1,6 +1,6 @@
 make
 clear
 #./ff
-clear && cat ff2.f - | ./ff
+clear && cat core.f ff2.f extra.f pg.f - | ./ff
 #clear && cat fsrc/op.f fsrc/ex.f fsrc/pg.f - | ./ff
 #./ff fsrc/op.f fsrc/ex.f fsrc/pg.f

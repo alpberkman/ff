@@ -1,0 +1,5 @@
+
+
+
+: B2C DUP BYTE * CELL / SWAP CELL % + ;
+: C2B CELL * BYTE / ;

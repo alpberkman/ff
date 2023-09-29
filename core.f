@@ -1,0 +1,164 @@
+
+
+: HERE HP @ ;
+: LAST LP @ ;
+
+
+: OVER 1 PICK ;
+: ROT R< SWAP R> SWAP ;
+
+
+: CELL+ CELL + ;
+: CELLS CELL * ;
+
+: BYTE+ BYTE + ;
+: BYTES BYTE * ;
+
+
+: +! SWAP OVER @ + SWAP ! ;
+: ALLOT HP +! ;
+: , HERE ! CELL ALLOT ;
+: C, HERE C! BYTE ALLOT ;
+
+
+: 1+ 1 + ;
+: 1- 1 - ;
+
+
+
+: IMM 1 6 << ;
+: VIS 1 7 << ;
+: LEN 31 ;
+
+: IMM? C@ IMM AND ;
+: VIS? C@ VIS AND ;
+: LEN? C@ LEN AND ;
+
+: LINK ;
+: FLAGS CELL+ ;
+: NAME CELL+ BYTE+ ;
+: CODE DUP FLAGS LEN? SWAP NAME + ;
+: PREV @ ;
+
+: MARK OVER C@ OR SWAP C! ;
+: IMMEDIATE LAST FLAGS IMM MARK ;
+: VISIBLE LAST FLAGS VIS MARK ; IMMEDIATE
+
+
+: [ FALSE STATE ! ; IMMEDIATE
+: ] TRUE STATE ! ;
+
+: LITERAL ['] LIT , , ; IMMEDIATE
+
+
+
+: BRANCH R> DROP R> @ JMP ;
+: BRANCH0 R> DROP 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
+
+
+: [SELF] BRANCH ;
+: SELF
+  ['] [SELF] ,
+  LAST CODE ,
+; IMMEDIATE
+
+
+: [IF] BRANCH0 ;
+: IF
+  ['] [IF] ,
+  HERE CELL ALLOT
+; IMMEDIATE
+
+: [THEN] ;
+: THEN
+  ['] [THEN] ,
+  HERE SWAP !
+; IMMEDIATE
+
+: [ELSE] BRANCH ;
+: ELSE
+  ['] [ELSE] ,
+  HERE SWAP
+  CELL ALLOT
+  HERE SWAP !
+; IMMEDIATE
+
+
+: [BEGIN] ;
+: BEGIN
+  ['] [BEGIN] ,
+  HERE
+; IMMEDIATE
+
+: [AGAIN] BRANCH ;
+: AGAIN
+  ['] [AGAIN] ,
+  ,
+; IMMEDIATE
+
+: [UNTIL] BRANCH0 ;
+: UNTIL
+  ['] [UNTIL] ,
+  ,
+; IMMEDIATE
+
+: [WHILE] BRANCH0 ;
+: WHILE
+  ['] [WHILE] ,
+  HERE CELL ALLOT
+; IMMEDIATE
+
+: [REPEAT] BRANCH ;
+: REPEAT
+  ['] [REPEAT] ,
+  SWAP ,
+  HERE SWAP !
+; IMMEDIATE
+
+
+
+: \ KEY 10 <> IF SELF THEN ; IMMEDIATE
+: ( KEY 41 <> IF SELF THEN ; IMMEDIATE
+
+
+: BL ( -- char ) 32 ;
+: HT ( -- char ) 09 ;
+: LF ( -- char ) 10 ;
+: VT ( -- char ) 11 ;
+: FF ( -- char ) 12 ;
+: CR ( -- char ) 13 ;
+
+
+: ISSPACE ( n -- flag )
+  0
+  OVER BL = OR
+  OVER HT = OR
+  OVER LF = OR
+  OVER VT = OR
+  OVER FF = OR
+  OVER CR = OR
+  SWAP DROP
+;
+
+
+: CHAR BEGIN KEY DUP ISSPACE WHILE DROP REPEAT ;
+: [CHAR] CHAR POSTPONE LITERAL ; IMMEDIATE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

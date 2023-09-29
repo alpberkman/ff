@@ -50,6 +50,7 @@ void disasm(VM *vm, cell addr, cell begin, cell end) {
             case LDB: printf("LDB"); break;
             case STRB: printf("STRB"); break;
             case CELL: printf("CELL"); break;
+            case BYTE: printf("BYTE"); break;
             case MEM: printf("MEM"); break;
             case LDP: printf("LDP"); break;
             case STRP: printf("STRP"); break;
