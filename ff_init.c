@@ -69,6 +69,8 @@ void m_number(VM *vm, cell num) {
 void m_const(VM *vm, char *name, cell num) {
     m_header(vm, name, MASK_VIS);
     m_word(vm, "[:]");
+    *((cell *) &(vm->mem[hp])) =  hp - CELL_SIZE;
+    hp += CELL_SIZE;
     m_number(vm, num);
     m_word(vm, "[;]");
 }
@@ -398,6 +400,7 @@ void ff_base_words(VM *vm) {
 
     // Tags
     cell tag_colon[] = {
+        POP, CELL, ADD, PUSH,
         RET,
     };
     cell tag_semicolon[] = {

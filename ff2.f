@@ -130,7 +130,29 @@ HERE READ-BUF-SIZE ALLOT
   ['] [;] ,
 ; IMMEDIATE
 
-: CONSTANT : POSTPONE LITERAL POSTPONE ; ;
+: [CONSTANT] ;
+: CONSTANT
+  :
+  ['] [CONSTANT] ,
+  POSTPONE LITERAL POSTPONE ;
+;
+
+(
+
+when using constant instead of tagining it both with
+['] and [constant] have a word that compiles:
+header - name - [CONSTANT] - ???
+
+: [CONSTANT] R> @ ;
+: CONSTANT
+  MAKE-HEADER [ IMMEDIATE VISIBLE ]
+  ['] CONSTANT ,
+  POSTPONE LITERAL
+;
+
+
+same for variable
+)
 
 
 : CLEAR 27 EMIT 99 EMIT ;

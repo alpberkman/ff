@@ -40,7 +40,6 @@ void read() {
     buf[len] = '\0';
 }
 
-
 cell find(VM *vm) {
     cell addr;
     byte flags;
@@ -61,11 +60,15 @@ cell find(VM *vm) {
 
 // postpone ' [']
 void interp(VM *vm) {
-    if(streq(buf, ":")) {
+    if(streq(buf, "(")) {
+        while(getchar() != ')');
+    } else if(streq(buf, ":")) {
         (*((cell *) &(vm->mem[st_addr]))) = TTRUE;
         read();
         m_header(vm, (char *)buf, 0);
         m_word(vm, "[:]");
+        *((cell *) &(vm->mem[hp])) =  hp - CELL_SIZE;
+        hp += CELL_SIZE;
         update;
     } else if(streq(buf, "\'")) {
         read();
@@ -91,7 +94,9 @@ void interp(VM *vm) {
 }
 
 void compile(VM *vm) {
-    if(streq(buf, ";")) {
+    if(streq(buf, "(")) {
+        while(getchar() != ')');
+    } else if(streq(buf, ";")) {
         m_word(vm, "[;]");
         vm->mem[lp + CELL_SIZE] |= MASK_VIS;
         (*((cell *) &(vm->mem[st_addr]))) = FFALSE;
