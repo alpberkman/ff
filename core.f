@@ -116,6 +116,32 @@
 ; IMMEDIATE
 
 
+: [DO] ;
+: DO ;
+
+: [LOOP] ;
+: LOOP ;
+
+: [+LOOP] ;
+: +LOOP ;
+
+
+: [FOR] ;
+: FOR ;
+
+: [NEXT] ;
+: NEXT ;
+
+
+: [NONAME:] ;
+: :NONAME
+  HERE
+  LAST ,
+  LP !
+  0 C,
+  HERE ['] [NONAME:] , ]
+;
+
 
 : \ KEY 10 <> IF SELF THEN ; IMMEDIATE
 : ( KEY 41 <> IF SELF THEN ; IMMEDIATE
@@ -146,11 +172,27 @@
 
 
 
+: TYPE ( addr u -- )
+  OVER + SWAP
+  BEGIN OVER OVER > WHILE
+    DUP @ EMIT
+    1+
+  REPEAT DROP DROP
+;
 
-
-
-
-
+: [."]
+  R> DUP CELL+ OVER @ TYPE
+  DUP @ + CELL+ R<
+;
+: ["] ;
+: ."
+  ['] [."] ,
+  HERE CELL ALLOT 0
+  BEGIN KEY DUP [CHAR] " <> WHILE
+    C, 1+
+  REPEAT DROP SWAP !
+  ['] ["] ,
+; IMMEDIATE
 
 
 

@@ -150,8 +150,10 @@ header - name - [CONSTANT] - ???
   POSTPONE LITERAL
 ;
 
+bin2src
 
 same for variable
+
 )
 
 
