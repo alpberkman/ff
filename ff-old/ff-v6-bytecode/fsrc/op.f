@@ -1,0 +1,65 @@
+
+: NOP 0 ;
+: LIT 1 ;
+2 : HALT APP ;
+
+3 : DUP APP ;
+4 : DROP APP ;
+5 : SWAP APP ;
+6 6 5 7 : PUSH APP APP APP APP ;
+6 5 7 7 : POP APP APP APP APP ;
+8 : PICKP APP ;
+9 : PICKR APP ;
+
+: JMP 10 ;
+: JZ 11 ;
+
+: CALL 12 ;
+: RET 13 ;
+
+14 : EQ APP ;
+15 : NEQ APP ;
+16 : LT APP ;
+17 : GT APP ;
+
+18 : AND APP ;
+19 : OR APP ;
+20 : XOR APP ;
+21 : SHR APP ;
+22 : SHL APP ;
+
+23 : ADD APP ;
+24 : SUB APP ;
+25 : MUL APP ;
+26 : DIV APP ;
+27 : MOD APP ;
+
+28 : LDC APP ;
+29 : STRC APP ;
+30 : LDB APP ;
+31 : STRB APP ;
+
+32 : LDS APP ;
+33 : STRS APP ;
+
+34 : LDP APP ;
+35 : STRP APP ;
+36 : LDR APP ;
+37 : STRR APP ;
+
+38 : LDI APP ;
+39 : STRI APP ;
+40 : LDH APP ;
+41 : STRH APP ;
+42 : LDL APP ;
+43 : STRL APP ;
+
+44 : KEY APP ;
+45 : EMIT APP ;
+
+46 : CSZ APP ;
+
+50 : DEB APP ;
+
+
+

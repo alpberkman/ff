@@ -116,11 +116,36 @@
 ; IMMEDIATE
 
 
-: [DO] ;
-: DO ;
+: BURY R> SWAP R> SWAP R< R< R< ;
+: UNCOVER R> R> R> SWAP R< SWAP R< ;
 
-: [LOOP] ;
-: LOOP ;
+: I 1 RICK ;
+: J 5 RICK ;
+: I-LIMIT 3 RICK ;
+
+: I+ R> SWAP R> SWAP R> + R< R< R< ;
+
+: UNLOOP UNCOVER DROP UNCOVER DROP ;
+
+: [DO] SWAP BURY BURY ;
+: DO
+  ['] [DO] ,
+  HERE
+; IMMEDIATE
+
+: [LOOP]
+  1 I+
+  2 RICK 1 RICK < BRANCH0
+  R> R> R> DROP R< R<
+;
+
+: LOOP
+  ['] [LOOP] ,
+  ,
+; IMMEDIATE
+
+: LEAVE ;
+: CONT ;
 
 : [+LOOP] ;
 : +LOOP ;
@@ -155,7 +180,7 @@
 : CR ( -- char ) 13 ;
 
 
-: ISSPACE ( n -- flag )
+: ISSPACE ( n -- )
   0
   OVER BL = OR
   OVER HT = OR
