@@ -25,7 +25,14 @@
 : 1- 1 - ;
 
 
-: NOT 0 = ;
+: INVERT -1 XOR ;
+: 0= 0 = ;
+: 0< 0 < ;
+: 0> 0 > ;
+: 0<> 0 <> ;
+
+: >= < 0= ;
+: <= > 0= ;
 
 
 : ++ DUP @ 1+ SWAP ! ;
@@ -61,13 +68,6 @@
 
 : BRANCH R> DROP R> @ JMP ;
 : BRANCH0 R> DROP 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
-( : BRANCH0-N
-  SWAP
-  R> DROP
-  7 CELLS IP@ + JZ
-  R> CELLS + CELL+ JMP
-  R> CELLS + @ JMP
-;)
 
 
 : [SELF] BRANCH ;
@@ -141,6 +141,7 @@
 : I+ R> SWAP R> SWAP R> + R< R< R< ;
 
 : UNLOOP UNCOVER DROP UNCOVER DROP ;
+
 : BRANCH0-UNLOOP
   R> DROP 6 CELLS IP@ + JZ
   R> CELL+ UNLOOP JMP
@@ -163,22 +164,30 @@
   ,
 ; IMMEDIATE
 
+: [+LOOP]
+  I+
+  1 RICK 2 RICK >= BRANCH0-UNLOOP
+;
+: +LOOP
+  ['] [+LOOP] ,
+  ,
+; IMMEDIATE
 
-: y 114 111 do i loop ;
-: x 333 330 do i unloop halt exit loop ;
 
-: LEAVE ;
-: CONT ;
+: [FOR] BURY 0 BURY ;
+: FOR
+  ['] [FOR] ,
+  HERE
+; IMMEDIATE
 
-: [+LOOP] ;
-: +LOOP ;
-
-
-: [FOR] ;
-: FOR ;
-
-: [NEXT] ;
-: NEXT ;
+: [NEXT]
+  1 I+
+  1 RICK 2 RICK = BRANCH0-UNLOOP
+;
+: NEXT
+  ['] [NEXT] ,
+  ,
+; IMMEDIATE
 
 
 : [NONAME:] ;
@@ -221,11 +230,8 @@
 
 
 : TYPE ( addr u -- )
-  OVER + SWAP
-  BEGIN OVER OVER > WHILE
-    DUP @ EMIT
-    1+
-  REPEAT DROP DROP
+  DUP 0= IF DROP DROP EXIT THEN
+  0 DO DUP @ EMIT 1+ LOOP DROP
 ;
 
 : [."]
@@ -235,10 +241,10 @@
 : ["] ;
 : ."
   ['] [."] ,
-  HERE CELL ALLOT 0
+  HERE 0 ,
   BEGIN KEY DUP [CHAR] " <> WHILE
-    C, 1+
-  REPEAT DROP SWAP !
+    C, DUP ++
+  REPEAT DROP DROP
   ['] ["] ,
 ; IMMEDIATE
 
