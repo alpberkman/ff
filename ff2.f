@@ -17,10 +17,12 @@
 
 
 : .
+  DUP 10000 / 10 % [char] 0 + emit
+  DUP 1000 / 10 % [char] 0 + emit
+  DUP 100 / 10 % [char] 0 + emit
+  DUP 10 / 10 % [char] 0 + emit
+  DUP 1 / 10 % [char] 0 + emit
   DROP
-  [char] ? emit
-  [char] ? emit
-  [char] ? emit
 ;
 
 : N-PRINT ( addr n -- )

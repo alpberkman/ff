@@ -10,4 +10,5 @@ vocab
 z
 
 
-
+0 psp! 1 rsp! clear
+: x 10 0 do i . LF emit i 7 = if leave then loop ;
