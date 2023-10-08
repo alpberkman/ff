@@ -140,7 +140,14 @@
 
 : I+ R> SWAP R> SWAP R> + R< R< R< ;
 
-: UNLOOP UNCOVER DROP UNCOVER DROP ;
+: DISCARD-LOOP R> UNCOVER DROP UNCOVER DROP R< ;
+: UNLOOP DISCARD-LOOP ;
+: BRANCH0-UNLOOP
+  R> DROP 6 CELLS IP@ + JZ
+  DISCARD-LOOP R> CELL+ JMP
+  R> @ JMP
+;
+
 
 : [DO] SWAP BURY BURY ;
 : DO
@@ -150,18 +157,21 @@
 
 : [LOOP]
   1 I+
-  1 RICK 2 RICK = BRANCH0
+  1 RICK 2 RICK = BRANCH0-UNLOOP
+  ( branch that calls unloop just copy BRANCH0 and add unloop before return)
   ( UNLOOP halt)
 ;
 : LOOP
   ['] [LOOP] ,
-  here swap , @
-  ['] UNLOOP ,
+  ,
+  ( here swap , @)
+  ( ['] UNLOOP ,)
 ; IMMEDIATE
 
 ( : x 3 0 do 3 0 do I-limit j * i + loop loop ;
 )
-: y 3 0 do i loop ;
+: y 114 111 do i loop ;
+: x 333 330 do i unloop exit loop ;
 
 : LEAVE ;
 : CONT ;
