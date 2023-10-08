@@ -409,6 +409,9 @@ void ff_base_words(VM *vm) {
     cell tag_variable[] = {
         RET,
     };
+    cell tag_constant[] = {
+        RET,
+    };
 
     HEADER([:], MASK_VIS);
     OPCODES(tag_colon);
@@ -418,6 +421,9 @@ void ff_base_words(VM *vm) {
 
     HEADER([VARIABLE], MASK_VIS);
     OPCODES(tag_variable);
+
+    HEADER([CONSTANT], MASK_VIS);
+    OPCODES(tag_constant);
 }
 
 void ff_high_words(VM *vm) {

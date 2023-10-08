@@ -80,7 +80,12 @@ void interp(VM *vm) {
         read();
         m_var(vm, (char *)buf);
         update;
-    } else {
+    }
+    /*else if(streq(buf, "CONSTANT")) {
+        read();
+        m_var(vm, (char *)buf);
+        update;
+    } */else {
         cell addr = find(vm);
         if(addr != 0) {
             (*((cell *) &(vm->mem[0]))) = addr + CELL_SIZE + 1 + len;

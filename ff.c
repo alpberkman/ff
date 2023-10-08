@@ -52,7 +52,7 @@ void _jmp(VM *vm) {
 void _jz(VM *vm) {
     cell addr = vm->ps[--vm->psp];
     cell flag = vm->ps[--vm->psp];
-    if(flag == ((cell) 0))
+    if(flag == ((cell) FFALSE))
         vm->ip = addr;
 }
 void _ret(VM *vm) {

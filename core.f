@@ -25,6 +25,13 @@
 : 1- 1 - ;
 
 
+: NOT 0 = ;
+
+
+: ++ DUP @ 1+ SWAP ! ;
+: -- DUP @ 1- SWAP ! ;
+
+
 
 : IMM 1 6 << ;
 : VIS 1 7 << ;
@@ -54,6 +61,13 @@
 
 : BRANCH R> DROP R> @ JMP ;
 : BRANCH0 R> DROP 5 CELLS IP@ + JZ R> CELL+ JMP R> @ JMP ;
+( : BRANCH0-N
+  SWAP
+  R> DROP
+  7 CELLS IP@ + JZ
+  R> CELLS + CELL+ JMP
+  R> CELLS + @ JMP
+;)
 
 
 : [SELF] BRANCH ;
@@ -120,8 +134,9 @@
 : UNCOVER R> R> R> SWAP R< SWAP R< ;
 
 : I 1 RICK ;
-: J 5 RICK ;
-: I-LIMIT 3 RICK ;
+: J 3 RICK ;
+: I-LIMIT 2 RICK ;
+: J-LIMIT 4 RICK ;
 
 : I+ R> SWAP R> SWAP R> + R< R< R< ;
 
@@ -135,14 +150,18 @@
 
 : [LOOP]
   1 I+
-  2 RICK 1 RICK < BRANCH0
-  R> R> R> DROP R< R<
+  1 RICK 2 RICK = BRANCH0
+  ( UNLOOP halt)
 ;
-
 : LOOP
   ['] [LOOP] ,
-  ,
+  here swap , @
+  ['] UNLOOP ,
 ; IMMEDIATE
+
+( : x 3 0 do 3 0 do I-limit j * i + loop loop ;
+)
+: y 3 0 do i loop ;
 
 : LEAVE ;
 : CONT ;
