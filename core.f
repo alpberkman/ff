@@ -77,6 +77,13 @@
 ; IMMEDIATE
 
 
+: [RECURSE] ;
+: RECURSE
+  ['] [RECURSE] ,
+  LAST CODE ,
+; IMMEDIATE
+
+
 : [IF] BRANCH0 ;
 : IF
   ['] [IF] ,
@@ -153,6 +160,7 @@
 : DO
   ['] [DO] ,
   HERE
+  -1 BURY
 ; IMMEDIATE
 
 : [LOOP]
@@ -162,10 +170,9 @@
 : LOOP
   ['] [LOOP] ,
   ,
-  BEGIN 1 RICK -1 = WHILE
-    UNCOVER DROP
+  BEGIN 1 RICK -1 <> WHILE
     HERE UNCOVER !
-  REPEAT
+  REPEAT UNCOVER DROP
 ; IMMEDIATE
 
 : [+LOOP]
@@ -175,34 +182,17 @@
 : +LOOP
   ['] [+LOOP] ,
   ,
-  BEGIN 1 RICK -1 = WHILE
-    UNCOVER DROP
+  BEGIN 1 RICK -1 <> WHILE
     HERE UNCOVER !
-  REPEAT
+  REPEAT UNCOVER DROP
 ; IMMEDIATE
 
 
 : [LEAVE] R> UNLOOP R< BRANCH ;
 : LEAVE
   ['] [LEAVE] ,
-  HERE BURY -1 BURY
+  HERE BURY
   CELL ALLOT
-; IMMEDIATE
-
-
-: [FOR] BURY 0 BURY ;
-: FOR
-  ['] [FOR] ,
-  HERE
-; IMMEDIATE
-
-: [NEXT]
-  1 I+
-  1 RICK 2 RICK = BRANCH0-UNLOOP
-;
-: NEXT
-  ['] [NEXT] ,
-  ,
 ; IMMEDIATE
 
 

@@ -7,6 +7,22 @@
 : R>> R> R> ;
 : R<< R< R< ;
 
+
+: [FOR] BURY 0 BURY ;
+: FOR
+  ['] [FOR] ,
+  HERE
+; IMMEDIATE
+
+: [NEXT]
+  1 I+
+  1 RICK 2 RICK = BRANCH0-UNLOOP
+;
+: NEXT
+  ['] [NEXT] ,
+  ,
+; IMMEDIATE
+
 : [(] BRANCH ;
 : (
   ['] [(] ,
