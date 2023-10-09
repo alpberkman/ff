@@ -43,7 +43,7 @@ void m_word(VM *vm, char *word) {
     cell len = strlen(word);
     char buf[32] = {0};
 
-    for(cell i = 0; i < strlen(word); ++i)
+    for(unsigned int i = 0; i < strlen(word); ++i)
         buf[i] = toupper(word[i]);
 
     for(addr = lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {

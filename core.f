@@ -34,6 +34,8 @@
 : >= < 0= ;
 : <= > 0= ;
 
+: WITHIN R< OVER < 0= SWAP R> < AND ;
+
 
 : ++ DUP @ 1+ SWAP ! ;
 : -- DUP @ 1- SWAP ! ;
@@ -145,7 +147,7 @@
 : I-LIMIT 2 RICK ;
 : J-LIMIT 4 RICK ;
 
-: I+ R> SWAP R> SWAP R> + R< R< R< ;
+: I+ R> SWAP UNCOVER + BURY R< ;
 
 : UNLOOP UNCOVER DROP UNCOVER DROP ;
 
@@ -164,7 +166,7 @@
 ; IMMEDIATE
 
 : [LOOP]
-  1 I+
+  1 I+ ( UNCOVER 1+ BURY)
   1 RICK 2 RICK = BRANCH0-UNLOOP
 ;
 : LOOP

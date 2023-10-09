@@ -1,6 +1,6 @@
 
 
-#define CELL_TYPE unsigned short
+#define CELL_TYPE short
 #define MEM_SIZE (0x8000)
 //#define PS_SIZE (0x100)
 //#define RS_SIZE (0x100)

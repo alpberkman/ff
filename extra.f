@@ -33,3 +33,11 @@
   [CHAR] ) = UNTIL
   HERE !
 ; IMMEDIATE
+
+
+: OFF FALSE SWAP ! ;
+: ON TRUE SWAP ! ;
+
+
+: BETWEEN  ( n min max -- flag ) 1+ WITHIN ;
+
