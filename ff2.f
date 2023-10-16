@@ -101,9 +101,6 @@ HERE READ-BUF-SIZE ALLOT
 
 : ?EXIT IF R> DROP EXIT THEN ;
 
-: STRNCMP ( addr1 addr2 n -- n )
-
-;
 
 : ENTRY-HEADER
 (

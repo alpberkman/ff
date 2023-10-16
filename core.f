@@ -6,6 +6,9 @@
 
 : OVER 1 PICK ;
 : ROT R< SWAP R> SWAP ;
+: R@ 1 RICK ;
+: NIP SWAP DROP ;
+
 
 
 : CELL+ CELL + ;
@@ -228,7 +231,7 @@
   OVER VT = OR
   OVER FF = OR
   OVER CR = OR
-  SWAP DROP
+  NIP
 ;
 
 
@@ -236,17 +239,31 @@
 : [CHAR] CHAR POSTPONE LITERAL ; IMMEDIATE
 
 
+: COUNT ( addr1 -- addr2 u ) DUP CELL+ SWAP @ ;
 
 : TYPE ( addr u -- )
-  DUP 0= IF DROP DROP EXIT THEN
-  0 DO DUP @ EMIT 1+ LOOP DROP
+  DUP 0 <= IF DROP DROP EXIT THEN
+  0 DO DUP I + C@ EMIT LOOP DROP
 ;
 
-: [."]
-  R> DUP CELL+ OVER @ TYPE
-  DUP @ + CELL+ R<
-;
 : ["] ;
+
+: [S"]
+  R@ CELL+ R@ @
+  R@ @ CELL+ R> + R<
+;
+: S"
+  ['] [S"] ,
+  HERE 0 ,
+  BEGIN KEY DUP [CHAR] " <> WHILE
+    C, DUP ++
+  REPEAT DROP DROP
+; IMMEDIATE
+
+: [."]
+  R@ CELL+ R@ @ TYPE
+  R@ @ CELL+ R> + R<
+;
 : ."
   ['] [."] ,
   HERE 0 ,
@@ -255,6 +272,57 @@
   REPEAT DROP DROP
   ['] ["] ,
 ; IMMEDIATE
+
+
+: MOVE ( addr1 addr2 u -- )
+  DUP 0 <= IF DROP DROP DROP EXIT THEN
+  0 DO OVER I + C@ OVER I + C! LOOP
+  DROP DROP
+;
+
+
+
+: STRNCMP ( addr1 addr2 n -- n )
+  DUP 0 <= IF DROP DROP DROP 0 EXIT THEN
+  0 DO
+    OVER I + C@ OVER I + C@ - DUP 0<> IF
+      NIP NIP UNLOOP EXIT
+    THEN DROP
+  LOOP DROP DROP 0
+;
+
+: STREQ ( addr1 addr2 u -- )
+  STRNCMP 0=
+;
+
+
+VARIABLE BASE
+0 BASE !
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
