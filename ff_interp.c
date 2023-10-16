@@ -141,6 +141,10 @@ void eval(VM *vm) {
     if(streq(buf, "DUMP")) {
         dump(vm, "ff.dump");
         carr(vm, "rom.h");
+    } else if(streq(buf, "BYE")) {
+        dump(vm, "dump.bin");
+        carr(vm, "rom.h");
+        exit(0);
     } else if(streq(buf, "L1")) {
         list1(vm);
     } else if(streq(buf, "L2")) {

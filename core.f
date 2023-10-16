@@ -37,8 +37,6 @@
 : >= < 0= ;
 : <= > 0= ;
 
-: WITHIN R< OVER < 0= SWAP R> < AND ;
-
 
 : ++ DUP @ 1+ SWAP ! ;
 : -- DUP @ 1- SWAP ! ;
@@ -211,8 +209,14 @@
 ;
 
 
-: \ KEY 10 <> IF SELF THEN ; IMMEDIATE
-: ( KEY 41 <> IF SELF THEN ; IMMEDIATE
+: WITHIN ( n1 n2 n3 -- flag )
+  OVER OVER < IF
+    R< OVER > 0= SWAP R> < AND
+  ELSE
+     SWAP R< OVER > 0= SWAP R> < AND 0=
+  THEN
+;
+: BETWEEN  ( n min max -- flag ) 1+ WITHIN ;
 
 
 : BL ( -- char ) 32 ;
@@ -239,9 +243,16 @@
 : [CHAR] CHAR POSTPONE LITERAL ; IMMEDIATE
 
 
-: COUNT ( addr1 -- addr2 u ) DUP CELL+ SWAP @ ;
+: \ KEY LF <> IF SELF THEN ; IMMEDIATE
+: ( KEY [CHAR] ) <> IF SELF THEN ; IMMEDIATE
+: ?( IF POSTPONE ( THEN ; IMMEDIATE
+: ) ; IMMEDIATE
+: !( KEY DUP [CHAR] ) <> IF EMIT SELF THEN DROP ; IMMEDIATE
 
-: TYPE ( addr u -- )
+
+: COUNT ( addr1 -- addr2 n ) DUP CELL+ SWAP @ ;
+
+: TYPE ( addr n -- )
   DUP 0 <= IF DROP DROP EXIT THEN
   0 DO DUP I + C@ EMIT LOOP DROP
 ;
@@ -274,7 +285,7 @@
 ; IMMEDIATE
 
 
-: MOVE ( addr1 addr2 u -- )
+: MOVE ( addr1 addr2 n -- )
   DUP 0 <= IF DROP DROP DROP EXIT THEN
   0 DO OVER I + C@ OVER I + C! LOOP
   DROP DROP
@@ -291,15 +302,15 @@
   LOOP DROP DROP 0
 ;
 
-: STREQ ( addr1 addr2 u -- )
+: STREQ ( addr1 addr2 n -- )
   STRNCMP 0=
 ;
 
 
 VARIABLE BASE
-0 BASE !
-
-
+: BIN     ( -- )  2 BASE ! ;
+: DECIMAL ( -- ) 10 BASE ! ;
+: HEX     ( -- ) 16 BASE ! ;
 
 
 

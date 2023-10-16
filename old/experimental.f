@@ -9,6 +9,16 @@
 ;
 
 
+last .header .link
+last .header .flags
+\ wrong
+: .header ;
+: .link @ ;
+: .flags CELL + C@ ;
+
+: IMMEDIATE LAST @ CELL + DUP C@ 1 6 << OR SWAP C! ;
+
+: OVER 1 PICK ;
 
 
 : BURY R> SWAP R> SWAP R< R< R< ;

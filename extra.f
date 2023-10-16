@@ -1,5 +1,7 @@
 
 
+: DIVISIBLE ( u1 u2 -- u1 u2 f ) OVER OVER % 0 = ;
+
 
 : B2C DUP BYTE * CELL / SWAP CELL % + ;
 : C2B CELL * BYTE / ;
