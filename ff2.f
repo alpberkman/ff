@@ -110,6 +110,7 @@ HERE READ-BUF-SIZE ALLOT
   READ-CTR @ C,
 )
 ;
+(
 : :
   READ
   HERE
@@ -136,7 +137,7 @@ HERE READ-BUF-SIZE ALLOT
   POSTPONE LITERAL POSTPONE ;
 ;
 
-(
+
 
 when using constant instead of tagining it both with
 ['] and [constant] have a word that compiles:
@@ -154,11 +155,6 @@ bin2src
 same for variable
 
 )
-
-
-: CLEAR 27 EMIT 99 EMIT ;
-: RED 27 emit [char] [ emit [char] 4 emit [char] 1 emit [char] m emit ;
-
 
 
 

@@ -3,7 +3,8 @@ CC ?= gcc
 CFLAGS ?= -Wall -Wextra -O2 -Wno-unused-variable
 DFLAGS ?= -g -ansi
 SFLAGS ?= -Os -s
-FF ?= core.f ff2.f extra.f pg.f
+FF ?= core.f libs/term.f ff2.f
+FFEXTRA ?=  extra.f pg.f
 
 .PHONY: ff run
 

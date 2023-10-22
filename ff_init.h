@@ -13,7 +13,7 @@
 #define CONST(name, num) m_const(vm, STR(name), num);
 #define VAR(name) m_var(vm, STR(name));
 #define VAR2(name, num) m_var2(vm, STR(name), num);
-#define SET(ADDR, NUM) *((cell *) &(vm->mem[ADDR])) = NUM;
+#define SET(ADDR, NUM) *((cell *) &(vm->ram[ADDR])) = NUM;
 #define H(name, flag) HEADER(name, flag); WORD([:]);
 #define T() WORD([;]);
 

@@ -18,6 +18,7 @@ cell st_addr;
 
 int main(/*int argc, char *argv[]*/) {
     VM X;
+    X.ram = malloc(MEM_SIZE);
     ff_init_words(&X);
     list1(&X);
     list2(&X);
@@ -31,14 +32,15 @@ int main(/*int argc, char *argv[]*/) {
         //printf("LP: %i, HP: %i >>> ", (*((cell *) &(X.mem[lp_addr]))), (*((cell *) &(X.mem[hp_addr]))));
         //printf(">>> ");
         stacks(&X);
+        printf(">>> ");
         fflush(stdout);
         read();
         puts("");
         eval(&X);
         run(&X);
 //        stacks2(&X);
-        lp = (*((cell *) &(X.mem[lp_addr])));
-        hp = (*((cell *) &(X.mem[hp_addr])));
+        lp = (*((cell *) &(X.ram[lp_addr])));
+        hp = (*((cell *) &(X.ram[hp_addr])));
     }
 
     return 0;

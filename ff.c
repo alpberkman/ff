@@ -8,204 +8,203 @@ void _nop(VM *vm) {
     (void) vm;
 }
 void _lit(VM *vm) {
-    cell val = *((cell *) &(vm->mem[vm->ip]));
-    vm->ps[vm->psp++] = val;
-    vm->ip += CELL_SIZE;
+    cell val = *((cell *) &(vm->ram[vm->spu.ip]));
+    vm->spu.ps[vm->spu.psp++] = val;
+    vm->spu.ip += CELL_SIZE;
 }
 void _halt(VM *vm) {
-    vm->p = OFF;
+    vm->spu.p = OFF;
 }
 void _dup(VM *vm) {
-    cell val = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = val;
-    vm->ps[vm->psp++] = val;
+    cell val = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = val;
+    vm->spu.ps[vm->spu.psp++] = val;
 }
 void _drop(VM *vm) {
-    --vm->psp;
+    --vm->spu.psp;
 }
 void _swap(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = a;
-    vm->ps[vm->psp++] = b;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = a;
+    vm->spu.ps[vm->spu.psp++] = b;
 }
 void _push(VM *vm) {
-    vm->rs[vm->rsp++] = vm->ps[--vm->psp];
+    vm->spu.rs[vm->spu.rsp++] = vm->spu.ps[--vm->spu.psp];
 }
 void _pop(VM *vm) {
-    vm->ps[vm->psp++] = vm->rs[--vm->rsp];
+    vm->spu.ps[vm->spu.psp++] = vm->spu.rs[--vm->spu.rsp];
 }
 void _pick(VM *vm) {
-    byte n = vm->ps[--vm->psp] + 1;
-    n = vm->psp - n;
-    vm->ps[vm->psp++] = vm->ps[n];
+    byte n = vm->spu.ps[--vm->spu.psp] + 1;
+    n = vm->spu.psp - n;
+    vm->spu.ps[vm->spu.psp++] = vm->spu.ps[n];
 }
 void _rick(VM *vm) {
-    byte n = vm->ps[--vm->psp] + 1;
-    n = vm->rsp - n;
-    vm->ps[vm->psp++] = vm->rs[n];
+    byte n = vm->spu.ps[--vm->spu.psp] + 1;
+    n = vm->spu.rsp - n;
+    vm->spu.ps[vm->spu.psp++] = vm->spu.rs[n];
 }
 void _jmp(VM *vm) {
-    cell addr = vm->ps[--vm->psp];
-    vm->ip = addr;
+    cell addr = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ip = addr;
 }
 void _jz(VM *vm) {
-    cell addr = vm->ps[--vm->psp];
-    cell flag = vm->ps[--vm->psp];
+    cell addr = vm->spu.ps[--vm->spu.psp];
+    cell flag = vm->spu.ps[--vm->spu.psp];
     if(flag == ((cell) FFALSE))
-        vm->ip = addr;
+        vm->spu.ip = addr;
 }
 void _ret(VM *vm) {
-    cell addr = vm->rs[--vm->rsp];
-    vm->ip = addr;
+    cell addr = vm->spu.rs[--vm->spu.rsp];
+    vm->spu.ip = addr;
 }
 void _eq(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b == a ? TTRUE : FFALSE;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b == a ? TTRUE : FFALSE;
 }
 void _neq(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b != a ? TTRUE : FFALSE;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b != a ? TTRUE : FFALSE;
 }
 void _gt(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b > a ? TTRUE : FFALSE;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b > a ? TTRUE : FFALSE;
 }
 void _lt(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b < a ? TTRUE : FFALSE;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b < a ? TTRUE : FFALSE;
 }
 void _and(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b & a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b & a;
 }
 void _or(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b | a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b | a;
 }
 void _xor(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b ^ a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b ^ a;
 }
 void _shr(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b >> a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b >> a;
 }
 void _shl(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b << a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b << a;
 }
 void _tru(VM *vm) {
-    vm->ps[vm->psp++] = TTRUE;
+    vm->spu.ps[vm->spu.psp++] = TTRUE;
 }
 void _fls(VM *vm) {
-    vm->ps[vm->psp++] = FFALSE;
+    vm->spu.ps[vm->spu.psp++] = FFALSE;
 }
 void _add(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b + a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b + a;
 }
 void _sub(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b - a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b - a;
 }
 void _mul(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b * a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b * a;
 }
 void _div(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b / a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b / a;
 }
 void _mod(VM *vm) {
-    cell a = vm->ps[--vm->psp];
-    cell b = vm->ps[--vm->psp];
-    vm->ps[vm->psp++] = b % a;
+    cell a = vm->spu.ps[--vm->spu.psp];
+    cell b = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ps[vm->spu.psp++] = b % a;
 }
 void _ldc(VM *vm) {
-    cell addr = vm->ps[--vm->psp];
-    cell val = *((cell *) &(vm->mem[addr]));
-    vm->ps[vm->psp++] = val;
+    cell addr = vm->spu.ps[--vm->spu.psp];
+    cell val = *((cell *) &(vm->ram[addr]));
+    vm->spu.ps[vm->spu.psp++] = val;
 }
 void _strc(VM *vm) {
-    cell addr = vm->ps[--vm->psp];
-    cell val = vm->ps[--vm->psp];
-    *((cell *) &(vm->mem[addr])) = val;
+    cell addr = vm->spu.ps[--vm->spu.psp];
+    cell val = vm->spu.ps[--vm->spu.psp];
+    *((cell *) &(vm->ram[addr])) = val;
 }
 void _ldb(VM *vm) {
-    cell addr = vm->ps[--vm->psp];
-    byte val = vm->mem[addr];
-    vm->ps[vm->psp++] = val;
+    cell addr = vm->spu.ps[--vm->spu.psp];
+    byte val = vm->ram[addr];
+    vm->spu.ps[vm->spu.psp++] = val;
 }
 void _strb(VM *vm) {
-    cell addr = vm->ps[--vm->psp];
-    byte val = vm->ps[--vm->psp];
-    vm->mem[addr] = val;
+    cell addr = vm->spu.ps[--vm->spu.psp];
+    byte val = vm->spu.ps[--vm->spu.psp];
+    vm->ram[addr] = val;
 }
 void _cell(VM *vm) {
-    vm->ps[vm->psp++] = CELL_SIZE;
+    vm->spu.ps[vm->spu.psp++] = CELL_SIZE;
 }
 void _byte(VM *vm) {
-    vm->ps[vm->psp++] = BYTE_SIZE;
+    vm->spu.ps[vm->spu.psp++] = BYTE_SIZE;
 }
 void _mem(VM *vm) {
-    vm->ps[vm->psp++] = MEM_SIZE;
+    vm->spu.ps[vm->spu.psp++] = MEM_SIZE;
 }
 void _ldp(VM *vm) {
-    byte val = vm->psp;
-    vm->ps[vm->psp++] = val;
+    byte val = vm->spu.psp;
+    vm->spu.ps[vm->spu.psp++] = val;
 }
 void _strp(VM *vm) {
-    byte val = vm->ps[--vm->psp];
-    vm->psp = val;
+    byte val = vm->spu.ps[--vm->spu.psp];
+    vm->spu.psp = val;
 }
 void _ldr(VM *vm) {
-    byte val = vm->rsp;
-    vm->ps[vm->psp++] = val;
+    byte val = vm->spu.rsp;
+    vm->spu.ps[vm->spu.psp++] = val;
 }
 void _strr(VM *vm) {
-    byte val = vm->ps[--vm->psp];
-    vm->rsp = val;
+    byte val = vm->spu.ps[--vm->spu.psp];
+    vm->spu.rsp = val;
 }
 void _ldi(VM *vm) {
-    cell val = vm->ip;
-    vm->ps[vm->psp++] = val;
+    cell val = vm->spu.ip;
+    vm->spu.ps[vm->spu.psp++] = val;
 }
 void _stri(VM *vm) {
-    cell val = vm->ps[--vm->psp];
-    vm->ip = val;
+    cell val = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ip = val;
 }
 void _key(VM *vm) {
-    vm->ps[vm->psp++] = getchar();
+    vm->spu.ps[vm->spu.psp++] = getchar();
 }
 void _emit(VM *vm) {
-    putchar(vm->ps[--vm->psp]);
+    putchar(vm->spu.ps[--vm->spu.psp]);
 }
 void _call(VM *vm) {
-    cell addr = vm->ps[--vm->psp];
-    vm->ip = addr;
+    cell addr = vm->spu.ps[--vm->spu.psp];
+    vm->spu.ip = addr;
 }
 
 cell next(VM *vm) {
-    cell opcode = *((cell *) &(vm->mem[vm->ip]));
-    vm->ip += CELL_SIZE;
+    cell opcode = *((cell *) &(vm->ram[vm->spu.ip]));
+    vm->spu.ip += CELL_SIZE;
     return opcode;
 }
 void exec(VM *vm, cell opcode) {
-    //printf("op: %04x\n", opcode);
     switch(opcode) {
         case NOP: _nop(vm); break;
         case LIT: _lit(vm); break;
@@ -253,8 +252,8 @@ void exec(VM *vm, cell opcode) {
         case EMIT: _emit(vm); break;
         case CALL: _call(vm); break;
         default:
-            vm->rs[vm->rsp++] = vm->ip;
-            vm->ip = opcode;
+            vm->spu.rs[vm->spu.rsp++] = vm->spu.ip;
+            vm->spu.ip = opcode;
             break;
     }
 }
@@ -262,10 +261,8 @@ void tick(VM *vm) {
     exec(vm, next(vm));
 }
 void run(VM *vm) {
-    vm->p = ON;
-    //vm->psp = 0;
-    //vm->rsp = 0;
-    while(vm->p == ON)
+    vm->spu.p = ON;
+    while(vm->spu.p == ON)
         tick(vm);
 }
 
@@ -277,7 +274,7 @@ void dump(VM *vm, char *rom) {
     }
 
     for(int i = 0; i < MEM_SIZE; ++i)
-        fputc(vm->mem[i], fptr);
+        fputc(vm->ram[i], fptr);
 }
 void load(VM *vm, char *rom) {
     FILE *fptr = fopen(rom, "r");
@@ -287,7 +284,7 @@ void load(VM *vm, char *rom) {
     }
 
     for(int i = 0; i < MEM_SIZE; ++i)
-        vm->mem[i] = fgetc(fptr);
+        vm->ram[i] = fgetc(fptr);
 }
 void carr(VM *vm, char *rom) {
     FILE *fptr = fopen(rom, "w");
@@ -299,7 +296,7 @@ void carr(VM *vm, char *rom) {
     fprintf(fptr, "\n\n{");
     for(int i = 0; i < MEM_SIZE; ++i) {
         if(i%8 == 0) fprintf(fptr, "\n\t");
-        fprintf(fptr, "%03x, ", vm->mem[i]);
+        fprintf(fptr, "%03x, ", vm->ram[i]);
     }
     fprintf(fptr, "\n};\n\n");
 }

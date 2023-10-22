@@ -1,9 +1,11 @@
 
 
+#ifndef FF_IMPL
+#define FF_IMPL
+
 #define CELL_TYPE short
+#define BYTE_TYPE unsigned char
 #define MEM_SIZE (0x8000)
-//#define PS_SIZE (0x100)
-//#define RS_SIZE (0x100)
 
 
 #define FFALSE (0)
@@ -19,11 +21,13 @@
 
 
 typedef CELL_TYPE cell;
-typedef unsigned char byte;
+typedef BYTE_TYPE byte;
 
-typedef enum power power;
-typedef enum state state;
 typedef struct VM VM;
+typedef enum power power;
+typedef struct SPU SPU;
+typedef byte *RAM;
+
 typedef enum prim prim;
 
 
@@ -84,34 +88,26 @@ void load(VM *vm, char *rom);
 void carr(VM *vm, char *rom);
 
 
-#ifndef FF_IMPL
-#define FF_IMPL
 enum power {
     OFF = FFALSE,
     ON = TTRUE,
 };
 
-/*
-enum state {
-    INTERPRET = FFALSE,
-    COMPILE = TTRUE,
-};
-*/
-
-struct VM {
+struct SPU {
     power p;
-    //state s;
+
+    cell ip;
 
     cell ps[0x100];
     byte psp;
 
     cell rs[0x100];
     byte rsp;
+};
 
-    byte mem[MEM_SIZE];
-    cell ip;
-    //cell hp;
-    //cell lp;
+struct VM {
+    SPU spu;
+    RAM ram;
 };
 
 enum prim {
@@ -145,6 +141,7 @@ CALL,
 // Final Enum
 FF,
 };
+
 #endif
 
 

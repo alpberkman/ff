@@ -18,19 +18,19 @@ extern cell st_addr;
 void m_header(VM *vm, char *name, unsigned char flag) {
     cell i;
 
-    *((cell *) &(vm->mem[hp])) = *((cell *) &(lp));
+    *((cell *) &(vm->ram[hp])) = *((cell *) &(lp));
     lp = hp;
     hp += CELL_SIZE;
 
-    vm->mem[hp++] = strlen(name) | flag;
+    vm->ram[hp++] = strlen(name) | flag;
 
     for(i = 0; i < (cell) strlen(name); ++i)
-        vm->mem[hp + i] = toupper(name[i]);
+        vm->ram[hp + i] = toupper(name[i]);
     hp += strlen(name);
 }
 void m_opcodes(VM *vm, char *opcodes, int size) {
     for(int i = 0; i < size; ++i)
-        vm->mem[hp+i] = opcodes[i];
+        vm->ram[hp+i] = opcodes[i];
     hp += size;
 }
 void m_alloc(VM *vm, cell number) {
@@ -46,10 +46,10 @@ void m_word(VM *vm, char *word) {
     for(unsigned int i = 0; i < strlen(word); ++i)
         buf[i] = toupper(word[i]);
 
-    for(addr = lp; addr != 0; addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
+    for(addr = lp; addr != 0; addr = *((cell *) &(vm->ram[addr]))) {
+        flags = vm->ram[addr + CELL_SIZE];
         if((flags & MASK_VIS) && len == (flags & WORD_LEN))
-            if(strncmp(buf, (char *) &(vm->mem[addr + CELL_SIZE + 1]), len) == 0)
+            if(strncmp(buf, (char *) &(vm->ram[addr + CELL_SIZE + 1]), len) == 0)
                 break;
     }
 
@@ -58,43 +58,44 @@ void m_word(VM *vm, char *word) {
         return;
     }
 
-    *((cell *) &(vm->mem[hp])) =  addr + CELL_SIZE + 1 + len;
+    *((cell *) &(vm->ram[hp])) =  addr + CELL_SIZE + 1 + len;
     hp += CELL_SIZE;
 }
 void m_number(VM *vm, cell num) {
     m_word(vm, "LIT");
-    *((cell *) &(vm->mem[hp])) =  num;
+    *((cell *) &(vm->ram[hp])) =  num;
     hp += CELL_SIZE;
 }
 void m_const(VM *vm, char *name, cell num) {
     m_header(vm, name, MASK_VIS);
-    m_word(vm, "[:]");
-    *((cell *) &(vm->mem[hp])) =  hp - CELL_SIZE;
+    m_word(vm, "[CONSTANT]");
+    *((cell *) &(vm->ram[hp])) = num;
     hp += CELL_SIZE;
-    m_number(vm, num);
-    m_word(vm, "[;]");
 }
 void m_var(VM *vm, char *name) {
+    m_header(vm, name, MASK_VIS);
     m_word(vm, "[VARIABLE]");
-    cell tmp = hp;
-    *((cell *) &(vm->mem[hp])) = 0;
-    m_alloc(vm, CELL_SIZE);
-    m_const(vm, name, tmp);
+    *((cell *) &(vm->ram[hp])) = 0;
+    hp += CELL_SIZE;
+    //cell tmp = hp;
+    //*((cell *) &(vm->ram[hp])) = 0;
+    //m_alloc(vm, CELL_SIZE);
+    //m_const(vm, name, tmp);
 }
 void m_var2(VM *vm, char *name, cell num) {
     cell tmp = hp;
-    *((cell *) &(vm->mem[hp])) = num;
+    *((cell *) &(vm->ram[hp])) = num;
     m_alloc(vm, CELL_SIZE);
     m_const(vm, name, tmp);
 }
 
 void ff_base_words(VM *vm) {
 
-    vm->ip = 0;
-    vm->psp = 0;
-    vm->rsp = 0;
+    vm->spu.ip = 0;
+    vm->spu.psp = 0;
+    vm->spu.rsp = 0;
     for(int i = 0; i < MEM_SIZE; ++i)
-        vm->mem[i] = 0;
+        vm->ram[i] = 0;
 
     ALLOC(FF+256);
 
@@ -407,11 +408,19 @@ void ff_base_words(VM *vm) {
         POP, DROP, RET,
     };
     cell tag_variable[] = {
-        RET,
+        POP, RET,
     };
     cell tag_constant[] = {
+        POP, LDC, RET,
+    };
+/*
+    cell tag_create[] = {
         RET,
     };
+    cell tag_does[] = {
+        RET,
+    };
+*/
 
     HEADER([:], MASK_VIS);
     OPCODES(tag_colon);
@@ -424,15 +433,22 @@ void ff_base_words(VM *vm) {
 
     HEADER([CONSTANT], MASK_VIS);
     OPCODES(tag_constant);
+/*
+    HEADER([CREATE], MASK_VIS);
+    OPCODES(tag_create);
+
+    HEADER([DOES>], MASK_VIS);
+    OPCODES(tag_does);
+*/
 }
 
 void ff_high_words(VM *vm) {
-    hp_addr = hp + CELL_SIZE;
     VAR(HP);
-    lp_addr = hp + CELL_SIZE;
+    hp_addr = hp - CELL_SIZE;
     VAR(LP);
-    st_addr = hp + CELL_SIZE;
+    lp_addr = hp - CELL_SIZE;
     VAR(STATE);
+    st_addr = hp - CELL_SIZE;
 
     /* If needed other words in C
 

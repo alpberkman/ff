@@ -313,51 +313,6 @@ VARIABLE BASE
 : HEX     ( -- ) 16 BASE ! ;
 
 
-: STRLEN ( addr -- n )
-  0 BEGIN OVER OVER + @ 0 <> WHILE
-    1+
-  REPEAT NIP
-;
-
-
-
-
-
-
-
-
-: ENUM ( n -- n+1 ) DUP 1+ SWAP CONSTANT ;
-
-
-\ Data structures
-: ARRAY ( n -- )
-  HERE SWAP ALLOT
-  CONSTANT
-;
-
-
-: LIFO ( n -- )
-  DUP , 0 , ARRAY
-;
-: LIFO-SIZE ( lifo -- size )
-  2 CELLS -
-;
-: LIFO-CTR ( lifo -- ctr )
-  1 CELLS -
-;
-: POP ( lifo -- n )
-  DUP LIFO-CTR --
-  DUP LIFO-CTR @ CELLS + @
-;
-: PUSH ( n lifo -- )
-  DUP -ROT DUP LIFO-CTR @ + !
-  LIFO-CTR ++
-;
-: LIFO-PRINT ( lifo -- )
-  DUP LIFO-SIZE @ 0 DO
-    DUP I CELLS + @ . CR
-  LOOP DROP
-;
 
 
 

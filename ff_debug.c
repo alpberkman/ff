@@ -10,13 +10,13 @@ extern cell lp;
 
 void disasm(VM *vm, cell addr, cell begin, cell end) {
     while(begin < end) {
-        switch(*((cell *) &(vm->mem[begin]))){
+        switch(*((cell *) &(vm->ram[begin]))){
             case NOP: printf("NOP"); break;
             case LIT:
                 printf("LIT");
                 begin += CELL_SIZE;
-                printf(" (%i)", *((cell *) &(vm->mem[begin])));
-                printf("\n%04x %i/%04x", begin, *((cell *) &(vm->mem[begin])), *((cell *) &(vm->mem[begin])));
+                printf(" (%i)", *((cell *) &(vm->ram[begin])));
+                printf("\n%04x %i/%04x", begin, *((cell *) &(vm->ram[begin])), *((cell *) &(vm->ram[begin])));
                 break;
             case HALT: printf("HALT"); break;
             case DUP: printf("DUP"); break;
@@ -63,9 +63,9 @@ void disasm(VM *vm, cell addr, cell begin, cell end) {
             case CALL: printf("CALL"); break;
             default: {
                 cell f = addr;
-                while(*((cell *) &(vm->mem[begin])) < f)
-                    f = *((cell *) &(vm->mem[f]));
-                printf("%.*s (%04x)", (vm->mem[f + CELL_SIZE] & WORD_LEN), (char *) &(vm->mem[f + CELL_SIZE + 1]), *((cell *) &(vm->mem[begin])));
+                while(*((cell *) &(vm->ram[begin])) < f)
+                    f = *((cell *) &(vm->ram[f]));
+                printf("%.*s (%04x)", (vm->ram[f + CELL_SIZE] & WORD_LEN), (char *) &(vm->ram[f + CELL_SIZE + 1]), *((cell *) &(vm->ram[begin])));
             }
         }
         printf("\n");
@@ -82,10 +82,10 @@ void list1(VM *vm) {
 
     printf("NAME         LEN VIS IMM INSTR\n");
     printf("------------------------------\n");
-    for(addr = lp, end = hp; addr != 0; end = addr, addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
+    for(addr = lp, end = hp; addr != 0; end = addr, addr = *((cell *) &(vm->ram[addr]))) {
+        flags = vm->ram[addr + CELL_SIZE];
         printf("%.*s %.*s%2i   %c   %c   %02i : ",
-            (flags & WORD_LEN), (char *) &(vm->mem[addr + CELL_SIZE + 1]),
+            (flags & WORD_LEN), (char *) &(vm->ram[addr + CELL_SIZE + 1]),
             12 - (flags & WORD_LEN), "                               ",
             (flags & WORD_LEN),
             (flags & MASK_VIS) ? '+' : '-',//"VIS" : "INV",
@@ -93,7 +93,7 @@ void list1(VM *vm) {
             end - addr - CELL_SIZE - 1 - (flags & WORD_LEN)
         );
         for(int i = 0; i < (end - addr - CELL_SIZE - 1 - (flags & WORD_LEN))/CELL_SIZE; ++i)
-            printf("%04x ", *((cell *) &(vm->mem[addr + CELL_SIZE + 1 + (flags & WORD_LEN) + i*CELL_SIZE])));
+            printf("%04x ", *((cell *) &(vm->ram[addr + CELL_SIZE + 1 + (flags & WORD_LEN) + i*CELL_SIZE])));
         puts("");
     }
     puts("\n\n");
@@ -106,10 +106,10 @@ void list2(VM *vm) {
 
     printf("NAME        LEN VIS IMM INSTR\n");
     printf("-----------------------------\n");
-    for(addr = lp, end = hp; addr != 0; end = addr, addr = *((cell *) &(vm->mem[addr]))) {
-        flags = vm->mem[addr + CELL_SIZE];
+    for(addr = lp, end = hp; addr != 0; end = addr, addr = *((cell *) &(vm->ram[addr]))) {
+        flags = vm->ram[addr + CELL_SIZE];
         printf("%.*s %.*s%i   %c   %c   %02i :\n",
-            (flags & WORD_LEN), (char *) &(vm->mem[addr + CELL_SIZE + 1]),
+            (flags & WORD_LEN), (char *) &(vm->ram[addr + CELL_SIZE + 1]),
             12 - (flags & WORD_LEN), "                               ",
             (flags & WORD_LEN),
             (flags & MASK_VIS) ? '+' : '-',//"VIS" : "INV",
@@ -122,20 +122,20 @@ void list2(VM *vm) {
 }
 
 void stacks(VM *vm) {
-    printf("IP<%i>\n", vm->ip);
-    printf("P<%i> ", vm->psp);
-    for(int i = 0; i < vm->psp; ++i)
-        printf("%i ", vm->ps[i]);
+    printf("IP<%i>\n", vm->spu.ip);
+    printf("P<%i> ", vm->spu.psp);
+    for(int i = 0; i < vm->spu.psp; ++i)
+        printf("%i ", vm->spu.ps[i]);
     puts("");
 
-    printf("R<%i> ", vm->rsp);
-    for(int i = 0; i < vm->rsp; ++i)
-        printf("%i ", vm->rs[i]);
+    printf("R<%i> ", vm->spu.rsp);
+    for(int i = 0; i < vm->spu.rsp; ++i)
+        printf("%i ", vm->spu.rs[i]);
     puts("");
 }
 
 void stacks2(VM *vm) {
-    for(int i = 0; i < vm->psp; ++i)
-        printf("%i ", vm->ps[i]);
+    for(int i = 0; i < vm->spu.psp; ++i)
+        printf("%i ", vm->spu.ps[i]);
     printf(">>> ");
 }
