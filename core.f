@@ -8,6 +8,7 @@
 : ROT R< SWAP R> SWAP ;
 : R@ 1 RICK ;
 : NIP SWAP DROP ;
+: TUCK SWAP OVER ;
 
 
 

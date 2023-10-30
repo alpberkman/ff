@@ -400,17 +400,17 @@ void ff_base_words(VM *vm) {
     OPCODES(op_call);
 
     // Tags
-    cell tag_colon[] = {
+    cell tag_colon[] = {// Ignore next instruction
         POP, CELL, ADD, PUSH,
         RET,
     };
-    cell tag_semicolon[] = {
+    cell tag_semicolon[] = {// Return
         POP, DROP, RET,
     };
-    cell tag_variable[] = {
+    cell tag_variable[] = {// Return the next address
         POP, RET,
     };
-    cell tag_constant[] = {
+    cell tag_constant[] = {// Return the number in next address
         POP, LDC, RET,
     };
 /*
