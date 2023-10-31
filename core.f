@@ -6,6 +6,7 @@
 
 : OVER 1 PICK ;
 : ROT R< SWAP R> SWAP ;
+: -ROT SWAP R< SWAP R> ;
 : R@ 1 RICK ;
 : NIP SWAP DROP ;
 : TUCK SWAP OVER ;
@@ -39,14 +40,9 @@
 : <= > 0= ;
 
 
-: ++ DUP @ 1+ SWAP ! ;
-: -- DUP @ 1- SWAP ! ;
-
-
-
-: IMM 1 6 << ;
-: VIS 1 7 << ;
-: LEN 31 ;
+1 6 << CONSTANT IMM
+1 7 << CONSTANT VIS
+31     CONSTANT LEN
 
 : IMM? C@ IMM AND ;
 : VIS? C@ VIS AND ;
@@ -63,11 +59,19 @@
 : VISIBLE LAST FLAGS VIS MARK ; IMMEDIATE
 
 
-: [ FALSE STATE ! ; IMMEDIATE
-: ] TRUE STATE ! ;
+: ++ +1 +! ;
+: -- -1 +! ;
+
+: OFF FALSE SWAP ! ;
+: ON TRUE SWAP ! ;
+
+: 0, 0 , ;
+
+
+: [ STATE OFF ; IMMEDIATE
+: ] STATE ON ;
 
 : LITERAL ['] LIT , , ; IMMEDIATE
-
 
 
 : BRANCH R> DROP R> @ JMP ;
