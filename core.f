@@ -20,7 +20,7 @@
 : BYTES BYTE * ;
 
 
-: +! SWAP OVER @ + SWAP ! ;
+: +! TUCK @ + SWAP ! ;
 : ALLOT HP +! ;
 : , HERE ! CELL ALLOT ;
 : C, HERE C! BYTE ALLOT ;
@@ -59,13 +59,17 @@
 : VISIBLE LAST FLAGS VIS MARK ; IMMEDIATE
 
 
-: ++ +1 +! ;
-: -- -1 +! ;
+: ++ +1 SWAP +! ;
+: -- -1 SWAP +! ;
 
 : OFF FALSE SWAP ! ;
 : ON TRUE SWAP ! ;
 
 : 0, 0 , ;
+: SET     ( n mask -- n ) OR ;
+: CLEAR   ( n mask -- n ) INVERT AND ;
+: TOGGLE  ( n mask -- n ) XOR ;
+: TEST    ( n mask -- f ) AND ;
 
 
 : [ STATE OFF ; IMMEDIATE
@@ -149,13 +153,13 @@
 : UNCOVER R> R> R> SWAP R< SWAP R< ;
 
 : I 1 RICK ;
-: J 3 RICK ;
 : I-LIMIT 2 RICK ;
-: J-LIMIT 4 RICK ;
+: I-JMP 3 RICK ;
+: J 4 RICK ;
+: J-LIMIT 5 RICK ;
+: J-JMP 6 RICK ;
 
-: I+ R> SWAP UNCOVER + BURY R< ;
-
-: UNLOOP UNCOVER DROP UNCOVER DROP ;
+: UNLOOP UNCOVER DROP UNCOVER DROP UNCOVER DROP ;
 
 : BRANCH0-UNLOOP
   R> DROP 6 CELLS IP@ + JZ
@@ -164,53 +168,58 @@
 ;
 
 
-: [DO] SWAP BURY BURY ;
+: [DO]
+  R> DUP @ R< CELL+ R<
+  SWAP BURY BURY
+;
 : DO
   ['] [DO] ,
+  HERE CELL ALLOT
   HERE
-  -1 BURY
 ; IMMEDIATE
 
 : [LOOP]
-  1 I+ ( UNCOVER 1+ BURY)
+  UNCOVER 1+ BURY
   1 RICK 2 RICK = BRANCH0-UNLOOP
 ;
 : LOOP
   ['] [LOOP] ,
   ,
-  BEGIN 1 RICK -1 <> WHILE
-    HERE UNCOVER !
-  REPEAT UNCOVER DROP
+  HERE SWAP !
 ; IMMEDIATE
 
 : [+LOOP]
-  I+
-  1 RICK 2 RICK >= BRANCH0-UNLOOP
+  1 RICK SWAP
+  UNCOVER + BURY
+  2 RICK <
+  1 RICK 2 RICK >= AND BRANCH0-UNLOOP
 ;
 : +LOOP
   ['] [+LOOP] ,
   ,
-  BEGIN 1 RICK -1 <> WHILE
-    HERE UNCOVER !
-  REPEAT UNCOVER DROP
+  HERE SWAP !
 ; IMMEDIATE
 
 
-: [LEAVE] R> UNLOOP R< BRANCH ;
+: [LEAVE] R> DROP R> DROP R> DROP ;
 : LEAVE
   ['] [LEAVE] ,
-  HERE BURY
-  CELL ALLOT
 ; IMMEDIATE
 
 
-: [NONAME:] ;
-: :NONAME
+: MAKE-HEADER
   HERE
   LAST ,
   LP !
   0 C,
-  HERE ['] [NONAME:] , ]
+;
+
+: [:NONAME] ;
+: :NONAME
+  MAKE-HEADER
+  HERE
+  ['] [:NONAME] ,
+  STATE ON
 ;
 
 
@@ -224,12 +233,12 @@
 : BETWEEN  ( n min max -- flag ) 1+ WITHIN ;
 
 
-: BL ( -- char ) 32 ;
-: HT ( -- char ) 09 ;
-: LF ( -- char ) 10 ;
-: VT ( -- char ) 11 ;
-: FF ( -- char ) 12 ;
-: CR ( -- char ) 13 ;
+32 CONSTANT BL
+ 9 CONSTANT HT
+10 CONSTANT LF
+11 CONSTANT VT
+12 CONSTANT FF
+13 CONSTANT CR
 
 
 : ISSPACE ( n -- )
@@ -248,11 +257,11 @@
 : [CHAR] CHAR POSTPONE LITERAL ; IMMEDIATE
 
 
-: \ KEY LF <> IF SELF THEN ; IMMEDIATE
-: ( KEY [CHAR] ) <> IF SELF THEN ; IMMEDIATE
-: ?( IF POSTPONE ( THEN ; IMMEDIATE
-: ) ; IMMEDIATE
-: !( KEY DUP [CHAR] ) <> IF EMIT SELF THEN DROP ; IMMEDIATE
+: \ BEGIN KEY LF       = UNTIL ; IMMEDIATE
+: ( BEGIN KEY [CHAR] ) = UNTIL ; IMMEDIATE
+\ : ?( IF POSTPONE ( THEN ; IMMEDIATE
+\ : ) ; IMMEDIATE
+\ : !( KEY DUP [CHAR] ) <> IF EMIT SELF THEN DROP ; IMMEDIATE
 
 
 : COUNT ( addr1 -- addr2 n ) DUP CELL+ SWAP @ ;
@@ -262,10 +271,14 @@
   0 DO DUP I + C@ EMIT LOOP DROP
 ;
 
+\ Broken crashes after "
 : ["] ;
-
 : [S"]
-  R@ CELL+ R@ @
+  R@ COUNT
+  R@ @ CELL+ R> + R<
+;
+: [."]
+  R@ COUNT TYPE
   R@ @ CELL+ R> + R<
 ;
 : S"
@@ -274,12 +287,8 @@
   BEGIN KEY DUP [CHAR] " <> WHILE
     C, DUP ++
   REPEAT DROP DROP
+  ['] ["] ,
 ; IMMEDIATE
-
-: [."]
-  R@ CELL+ R@ @ TYPE
-  R@ @ CELL+ R> + R<
-;
 : ."
   ['] [."] ,
   HERE 0 ,
