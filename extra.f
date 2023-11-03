@@ -1,4 +1,47 @@
+VARIABLE READ-CTR
 
+: APPEND ( char addr -- )
+  READ-CTR @ + C!
+  READ-CTR ++
+;
+
+: READ ( addr n -- )
+  0 READ-CTR !
+  BEGIN KEY? 0= UNTIL
+  2 PICK APPEND
+  1 DO
+    KEY? ?LEAVE
+    OVER APPEND
+  LOOP DROP
+;
+
+: FIND ( addr -- addr 0 | xt 1 | xt -1 )
+  LAST BEGIN ?DUP WHILE
+    OVER OVER DUP NAME SWAP FLAGS LEN? STREQ IF
+    NIP DUP CODE SWAP FLAGS IMM? IF 1 ELSE -1 THEN EXIT THEN
+  PREV REPEAT
+;
+
+: VOCAB
+  LAST BEGIN ?DUP WHILE
+    DUP NAME OVER FLAGS LEN? TYPE
+    BL EMIT
+  PREV REPEAT CR
+;
+
+(
+
+: ?? POSTPONE DUP
+     POSTPONE IF
+     POSTPONE ['] POSTPONE EXECUTE
+     POSTPONE THEN
+; immediate
+)
+
+\ : a ?? dup ;
+
+: in tib 31 read ;
+: out tib read-ctr @ type cr ;
 
 
 

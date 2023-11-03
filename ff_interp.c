@@ -127,8 +127,16 @@ void compile(VM *vm) {
         update;
     } else if(streq(buf, "POSTPONE")) {
         read();
-        m_word(vm, (char *)buf);
-        update;
+        cell addr = find(vm);
+        if(addr != 0) {
+            flags = vm->ram[addr + CELL_SIZE];
+            if(flags & MASK_IMM)
+                m_word(vm, "[POSTPONEI]");
+            else
+                m_word(vm, "[POSTPONE]");
+            m_word(vm, (char *)buf);
+            update;
+        }
     } else {
         m_number(vm, atoi((char *)buf));
         update;

@@ -396,7 +396,7 @@ void ff_base_words(VM *vm) {
         POP, DROP, PUSH, RET,
     };
 
-    HEADER(CALL, MASK_VIS);
+    HEADER(EXECUTE, MASK_VIS);
     OPCODES(op_call);
 
     // Tags

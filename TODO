@@ -1,3 +1,17 @@
+['] LITERAL POSTONE LITERAL EXECUTE
+
+: POSTPONE ' ,  ; IMMEDIATE
+: POSTPONE ' ,  ; IMMEDIATE
+: ['] ' POSTONE LITERAL ; IMMEDIATE
+
+??
+: ?? POSTPONE DUP
+     POSTPONE IF
+     ' postpone literal POSTPONE EXECUTE
+     POSTPONE THEN
+; immediate
+
+
 0
 5 special case
 5 ENTRY-FIND

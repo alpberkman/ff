@@ -52,7 +52,7 @@ warn my : and ; are not used because of the outer interpreter
 : LAST LP @ ;
 
 
-: (( ['] ( CALL ;
+: (( ['] ( EXECUTE ;
 here
 here
 ((
