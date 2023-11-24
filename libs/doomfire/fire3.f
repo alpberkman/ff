@@ -1,0 +1,51 @@
+
+
+VARIABLE RSEED
+: SRAND ( n -- )
+  RSEED !
+;
+: RAND ( -- n )
+  RSEED @
+  31 * 7 -
+  DUP RSEED !
+;
+
+: BARRAY ( n -- )
+  CREATE HERE SWAP DUP ALLOT 0 FILL
+  DOES> SWAP +
+;
+
+80 CONSTANT WIDTH
+25 CONSTANT HEIGHT
+WIDTH HEIGHT * BARRAY FIRE
+0 FIRE WIDTH 
+HEIGHT FILL
+
+: TICK
+  WIDTH 0 DO
+    HEIGHT 1 DO
+      I WIDTH * J + WIDTH - FIRE C@ 1- 
+      RAND 3 MOD -
+      DUP 0< IF DROP 0 THEN
+      I WIDTH * J + FIRE C!
+    LOOP
+  LOOP
+;
+
+
+: ESC 27 EMIT ;
+: CLEAR ESC 99 EMIT ;
+
+: PAINT
+  WIDTH HEIGHT * 0 DO
+    I WIDTH MOD WIDTH 1- = IF
+      CR
+    ELSE
+    \ I FIRE C@ .
+    S"  ~;*!=#$@@@" HEIGHT SWAP /
+    I FIRE C@ SWAP / + C@ EMIT
+    THEN
+  LOOP
+;
+
+: MAIN BEGIN CLEAR TICK PAINT 100 MS AGAIN ;
